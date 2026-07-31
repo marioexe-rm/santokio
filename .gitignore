@@ -1,0 +1,10 @@
+.DS_Store
+**/.DS_Store
+
+# Configuración y artefactos locales de herramientas.
+.codex/
+.impeccable/
+
+# Fotografías fuente: contienen metadatos privados y no se publican.
+# El sitio usa copias saneadas bajo assets/catalogo/.
+ropa/
