@@ -46,6 +46,9 @@ const elements = {
   dialogPrice: document.querySelector("[data-dialog-price]"),
   dialogFacts: document.querySelector("[data-dialog-facts]"),
   dialogWhatsapp: document.querySelector("[data-dialog-whatsapp]"),
+  productPrevious: document.querySelector("[data-product-previous]"),
+  productNext: document.querySelector("[data-product-next]"),
+  productPosition: document.querySelector("[data-product-position]"),
   galleryStage: document.querySelector("[data-gallery-stage]"),
   galleryImage: document.querySelector("[data-gallery-image]"),
   galleryCaption: document.querySelector("[data-gallery-caption]"),
@@ -432,7 +435,15 @@ function getProductFacts(product) {
 }
 
 function renderDialogProduct(product) {
+  const productIndex = products.indexOf(product);
+  const previousProduct = products[(productIndex - 1 + products.length) % products.length];
+  const nextProduct = products[(productIndex + 1) % products.length];
+
   elements.dialogName.textContent = product.name;
+  elements.dialogClose.setAttribute(
+    "aria-label",
+    `Cerrar detalle de ${product.name}`,
+  );
   elements.dialogDescription.textContent = product.longDescription;
   elements.dialogPrice.textContent = formatPrice(product);
   elements.dialogFacts.innerHTML = getProductFacts(product)
@@ -446,6 +457,15 @@ function renderDialogProduct(product) {
     )
     .join("");
   elements.dialogWhatsapp.href = makeProductWhatsappUrl(product);
+  elements.productPosition.textContent = `${productIndex + 1} de ${products.length}`;
+  elements.productPrevious.setAttribute(
+    "aria-label",
+    `Prenda anterior: ${previousProduct.name}`,
+  );
+  elements.productNext.setAttribute(
+    "aria-label",
+    `Prenda siguiente: ${nextProduct.name}`,
+  );
 }
 
 function imageKindLabel(image) {
@@ -507,6 +527,19 @@ function showGalleryImage(index) {
 
   const total = state.activeProduct.images.length;
   state.galleryIndex = (index + total) % total;
+  renderGallery();
+}
+
+function showAdjacentProduct(offset) {
+  if (!state.activeProduct || products.length === 0) {
+    return;
+  }
+
+  const currentIndex = products.indexOf(state.activeProduct);
+  const nextIndex = (currentIndex + offset + products.length) % products.length;
+  state.activeProduct = products[nextIndex];
+  state.galleryIndex = 0;
+  renderDialogProduct(state.activeProduct);
   renderGallery();
 }
 
@@ -666,6 +699,10 @@ function bindEvents() {
   });
 
   elements.dialogClose.addEventListener("click", closeProduct);
+  elements.productPrevious.addEventListener("click", () =>
+    showAdjacentProduct(-1),
+  );
+  elements.productNext.addEventListener("click", () => showAdjacentProduct(1));
   elements.galleryPrevious.addEventListener("click", () =>
     showGalleryImage(state.galleryIndex - 1),
   );

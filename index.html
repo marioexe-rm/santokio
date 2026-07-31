@@ -71,8 +71,8 @@
       <nav class="site-navigation" id="site-navigation" aria-label="Navegación principal" data-navigation>
         <ul>
           <li><a href="#coleccion">Colección</a></li>
-          <li><a href="#concepto">Concepto</a></li>
           <li><a href="#como-comprar">Cómo comprar</a></li>
+          <li><a href="#concepto">Concepto</a></li>
           <li><a href="#preguntas">Preguntas frecuentes</a></li>
           <li><a href="#contacto">Contacto</a></li>
         </ul>
@@ -114,17 +114,6 @@
         <nav class="piece-index" aria-label="Ir a una pieza de la colección">
           <ol data-piece-index></ol>
         </nav>
-      </section>
-
-      <section class="editorial-intro" id="concepto" aria-labelledby="concept-title">
-        <h2 class="visually-hidden" id="concept-title">Concepto Santokio</h2>
-        <p class="editorial-statement">
-          Selección pequeña y personal de prendas nuevas importadas desde Japón, con
-          etiquetas originales. Algunos diseños y materiales son poco habituales en
-          tiendas chilenas generalistas; composición, talla y medidas se publican al
-          verificarse, y el precio se define pieza a pieza. Consulta directa, sin
-          urgencia ni descuentos artificiales.
-        </p>
       </section>
 
       <section class="catalogue" id="coleccion" aria-labelledby="catalogue-title">
@@ -169,6 +158,34 @@
             Ver todas las piezas
           </button>
         </div>
+      </section>
+
+      <section class="evidence" aria-labelledby="evidence-title">
+        <div class="section-heading">
+          <h2 id="evidence-title">Lo que ves y lo que se confirma.</h2>
+          <p>
+            La presentación distingue evidencia documental, visualización referencial
+            y datos todavía pendientes.
+          </p>
+        </div>
+        <dl class="evidence-list">
+          <div>
+            <dt>Prendas nuevas</dt>
+            <dd>Importadas desde Japón y conservadas con sus etiquetas originales.</dd>
+          </div>
+          <div>
+            <dt>Fotografías reales</dt>
+            <dd>Son la referencia principal para revisar la prenda disponible.</dd>
+          </div>
+          <div>
+            <dt>Visualizaciones con IA</dt>
+            <dd>Se identifican como referenciales y no prueban calce, color ni detalles.</dd>
+          </div>
+          <div>
+            <dt>Confirmación directa</dt>
+            <dd>Stock, medidas, entrega y condiciones se revisan antes del pago.</dd>
+          </div>
+        </dl>
       </section>
 
       <section class="buying-process" id="como-comprar" aria-labelledby="buying-title">
@@ -218,32 +235,15 @@
         </div>
       </section>
 
-      <section class="evidence" aria-labelledby="evidence-title">
-        <div class="section-heading">
-          <h2 id="evidence-title">Lo que ves y lo que se confirma.</h2>
-          <p>
-            La presentación distingue evidencia documental, visualización referencial
-            y datos todavía pendientes.
-          </p>
-        </div>
-        <dl class="evidence-list">
-          <div>
-            <dt>Prendas nuevas</dt>
-            <dd>Importadas desde Japón y conservadas con sus etiquetas originales.</dd>
-          </div>
-          <div>
-            <dt>Fotografías reales</dt>
-            <dd>Son la referencia principal para revisar la prenda disponible.</dd>
-          </div>
-          <div>
-            <dt>Visualizaciones con IA</dt>
-            <dd>Se identifican como referenciales y no prueban calce, color ni detalles.</dd>
-          </div>
-          <div>
-            <dt>Confirmación directa</dt>
-            <dd>Stock, medidas, entrega y condiciones se revisan antes del pago.</dd>
-          </div>
-        </dl>
+      <section class="editorial-intro" id="concepto" aria-labelledby="concept-title">
+        <h2 class="visually-hidden" id="concept-title">Concepto Santokio</h2>
+        <p class="editorial-statement">
+          Selección pequeña y personal de prendas nuevas importadas desde Japón, con
+          etiquetas originales. Algunos diseños y materiales son poco habituales en
+          tiendas chilenas generalistas; composición, talla y medidas se publican al
+          verificarse, y el precio se define pieza a pieza. Consulta directa, sin
+          urgencia ni descuentos artificiales.
+        </p>
       </section>
 
       <section class="faq" id="preguntas" aria-labelledby="faq-title">
@@ -370,24 +370,28 @@
       id="product-dialog"
       aria-labelledby="dialog-product-name"
       aria-describedby="dialog-product-description"
+      aria-modal="true"
       data-product-dialog
     >
       <div class="dialog-shell">
-        <button
-          class="dialog-close"
-          type="button"
-          aria-label="Cerrar detalle de la prenda"
-          data-dialog-close
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 5l14 14M19 5 5 19"></path>
-          </svg>
-        </button>
+        <header class="dialog-header">
+          <h2 id="dialog-product-name" data-dialog-name></h2>
+          <button
+            class="dialog-close"
+            type="button"
+            aria-label="Cerrar detalle de la prenda"
+            data-dialog-close
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 5l14 14M19 5 5 19"></path>
+            </svg>
+          </button>
+        </header>
 
         <section class="dialog-gallery" aria-label="Galería de la prenda">
           <figure class="gallery-stage" data-gallery-stage>
             <img
-              src="ropa/1/frontal_1.jpeg"
+              src="assets/catalogo/1/frontal_1.jpeg"
               alt="Falda extendida sobre una superficie de madera, con paneles de patrones gráficos."
               width="4284"
               height="5712"
@@ -400,11 +404,11 @@
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M19 12H6M10 7l-5 5 5 5"></path>
               </svg>
-              <span>Anterior</span>
+              <span>Foto anterior</span>
             </button>
             <p aria-live="polite" aria-atomic="true" data-gallery-position></p>
             <button type="button" data-gallery-next>
-              <span>Siguiente</span>
+              <span>Foto siguiente</span>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 12h13M14 7l5 5-5 5"></path>
               </svg>
@@ -413,22 +417,39 @@
           <div class="gallery-thumbnails" data-gallery-thumbnails></div>
         </section>
 
-        <article class="dialog-product">
-          <h2 id="dialog-product-name" data-dialog-name></h2>
-          <p id="dialog-product-description" class="dialog-description" data-dialog-description></p>
-          <p class="dialog-price" data-dialog-price></p>
-          <a
-            class="button button-primary dialog-whatsapp"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-dialog-whatsapp
-          >
-            Consultar esta prenda
+        <nav class="product-navigation" aria-label="Navegar entre prendas">
+          <button type="button" data-product-previous>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 12H6M10 7l-5 5 5 5"></path>
+            </svg>
+            <span>Anterior</span>
+          </button>
+          <p aria-live="polite" aria-atomic="true" data-product-position></p>
+          <button type="button" data-product-next>
+            <span>Siguiente</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M14 7l5 5-5 5"></path>
             </svg>
-          </a>
+          </button>
+        </nav>
+
+        <article class="dialog-product">
+          <p id="dialog-product-description" class="dialog-description" data-dialog-description></p>
+          <p class="dialog-price" data-dialog-price></p>
+          <div class="dialog-cta">
+            <a
+              class="button button-primary dialog-whatsapp"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-dialog-whatsapp
+            >
+              Consultar esta prenda
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h13M14 7l5 5-5 5"></path>
+              </svg>
+            </a>
+          </div>
           <dl class="product-facts" data-dialog-facts></dl>
           <p class="colour-note">
             El color puede variar según la iluminación y la configuración de la pantalla.
