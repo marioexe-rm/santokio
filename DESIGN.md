@@ -1,5 +1,5 @@
 ---
-name: Santokio
+name: Santokyo
 description: Secuencia editorial de prendas importadas desde Japón, documentada con calma y evidencia.
 colors:
   chalk: "#f4f3ef"
@@ -77,13 +77,13 @@ components:
     padding: "0.5rem 0"
 ---
 
-# Design System: Santokio
+# Design System: Santokyo
 
 ## Overview
 
 **Creative North Star: "Índigo cinético"**
 
-Santokio es una secuencia fotográfica paciente: una colección breve avanza mediante imágenes reales de gran escala, planos oblicuos y módulos desiguales, sin adquirir la uniformidad de una boutique de tarjetas. La voz es editorial, directa y verificable; el espacio tiza deja examinar cada pieza mientras tinta e índigo organizan el recorrido.
+Santokyo es una secuencia fotográfica paciente: una colección breve avanza mediante visualizaciones editoriales de gran escala, planos oblicuos y módulos desiguales, sin adquirir la uniformidad de una boutique de tarjetas. La voz es editorial, directa y verificable; el espacio tiza deja examinar cada pieza mientras tinta e índigo organizan el recorrido. Las fotografías reales permanecen disponibles como evidencia dentro de cada ficha.
 
 La identidad obtiene energía de pocas intervenciones planas —orquídea, una línea chartreuse y geometrías inclinadas—, no de efectos aplicados a la prenda. La fotografía permanece estable, completa y neutral. El sistema sirve primero para entender la selección, distinguir evidencia de visualización y consultar una pieza directamente.
 
@@ -140,7 +140,7 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 - **Body** (400, 1rem, interlínea 1.55): texto corriente con un máximo habitual de 70 caracteres.
 - **Label** (570, 0.78rem, tracking 0.08em): etiquetas funcionales en mayúsculas para búsqueda y orden.
 - **Numeral editorial** (330, fluido, interlínea 0.85): índices de pieza y números de proceso con cifras tabulares.
-- **Wordmark** (620, fluido, tracking 0.2em): nombre Santokio en mayúsculas.
+- **Wordmark** (620, fluido, tracking 0.2em): nombre Santokyo en mayúsculas.
 
 ### Named Rules
 
@@ -150,7 +150,7 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 
 El lienzo está limitado a 96rem y usa un gutter fluido entre 1rem y 3.5rem. La rampa espacial avanza en nueve pasos, de 0.375rem a 8rem, y los capítulos principales respiran con los pasos 7 a 9.
 
-La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una imagen real dominante y un anticipo estrecho a la derecha. El catálogo reutiliza las doce columnas, pero alterna proporciones 8/4, 4/8 y 7/5 para impedir una cuadrícula de tarjetas uniformes. Los datos siempre quedan unidos a su fotografía por una regla.
+La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una visualización IA dominante y el siguiente slide en anticipo a la derecha. El catálogo reutiliza las doce columnas, pero alterna proporciones 8/4, 4/8 y 7/5 para impedir una cuadrícula de tarjetas uniformes. Los datos siempre quedan unidos a la visualización por una regla, y la evidencia fotográfica real queda en la ficha.
 
 A 72rem se comprime la navegación y la evidencia pasa a dos columnas. A 58rem aparece el menú desplegable, el hero se apila en tres filas y el catálogo adopta una relación visual/resumen 7/5. A 42rem, hero, herramientas, catálogo, proceso, evidencia, footer y diálogo pasan a flujo vertical; la anticipación de la siguiente pieza se conserva como una franja lateral estrecha. A 23.5rem se reducen gutters y miniaturas.
 
@@ -189,11 +189,11 @@ El encabezado es sticky, tiza y separado por una regla. Los enlaces dibujan una 
 
 ### Panoramic Sequence
 
-La secuencia hero combina una fotografía real completa, un anticipo parcial de la siguiente pieza y el navegador numérico `01—02—03`. Las capas índigo y orquídea se inclinan detrás de las imágenes; un marcador chartreuse de ancho animado identifica la pieza activa.
+La secuencia hero rota cada cuatro segundos las tres visualizaciones IA del producto destacado, muestra la siguiente en un anticipo parcial y conserva el navegador numérico `01—02—03`. Las capas índigo y orquídea se inclinan detrás de las imágenes; el revelado de cada slide reutiliza la entrada inicial y se detiene con movimiento reducido o pestaña oculta.
 
 ### Product Entry
 
-Cada entrada contrapone una superficie fotográfica tiza luminosa con un resumen tiza y un índice editorial. Las proporciones alternan por posición, los hechos se alinean en filas con regla y el botón “Ver detalle” abre el diálogo; la imagen nunca es un fondo decorativo.
+Cada entrada contrapone un carrusel de tres visualizaciones IA sobre tiza luminosa con un resumen tiza y un índice editorial. Las proporciones alternan por posición, los hechos se alinean en filas con regla y el botón “Ver detalle” abre el diálogo; la imagen nunca es un fondo decorativo y los chevrons mantienen estado independiente por producto.
 
 ### Product Dialog
 
@@ -201,7 +201,7 @@ El diálogo rectangular divide galería neutral e información. Contiene miniatu
 
 ### AI Disclosure
 
-Las visualizaciones IA sólo aparecen dentro de la galería secundaria. El pie cambia a orquídea, la miniatura muestra la etiqueta textual “IA” y el estado anunciado nombra explícitamente “visualización referencial generada con IA”; ninguna de esas imágenes alimenta hechos de producto.
+Las visualizaciones IA aparecen en portada, tarjetas y al inicio de la galería como presentación editorial. En la ficha, el aviso separado cambia a orquídea y la miniatura muestra la etiqueta textual “IA”; ninguna de esas imágenes alimenta hechos de producto. Las dos fotografías reales aparecen después y ocultan por completo el aviso IA.
 
 ### Motion
 
@@ -211,7 +211,7 @@ Los estados funcionales duran 180–260ms. La entrada inicial mueve el plano ín
 
 ### Do:
 
-- **Do** usar fotografía real local, completa y sin filtro como evidencia y foco de hero, catálogo y detalle.
+- **Do** usar visualizaciones IA identificadas en hero y catálogo, y fotografía real local, completa y sin filtro como evidencia dentro del detalle.
 - **Do** mantener los datos, la disponibilidad y la acción de consulta próximos a la pieza correspondiente.
 - **Do** construir ritmo con módulos desiguales, espacio amplio, reglas finas y planos cromáticos detrás de las imágenes.
 - **Do** describir WhatsApp como consulta directa y precompletar nombre y referencia de la prenda.

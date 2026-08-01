@@ -5,16 +5,20 @@ export const VERIFICATION = Object.freeze({
 });
 
 export const SITE_CONFIG = Object.freeze({
-  brand: "Santokio",
+  brand: "Santokyo",
   locale: "es-CL",
   currency: "CLP",
   whatsappNumber: "56932926203",
   generalWhatsappMessage:
-    "Hola, quisiera conocer más sobre la colección de Santokio. ¿Me pueden orientar?",
+    "Hola, quisiera conocer más sobre la colección de Santokyo. ¿Me pueden orientar?",
+  // Pendiente de reemplazo si se confirma una cuenta oficial distinta.
+  instagramUrl: "https://www.instagram.com/santokyo/",
+  instagramLabel: "Instagram de Santokyo",
+  shippingCostClp: 3000,
   delivery:
-    "Santiago. Entrega a domicilio con el costo del envío pagado previamente. La prenda se paga al momento de la entrega mediante transferencia bancaria o efectivo.",
+    "El envío dentro de Santiago tiene un costo fijo de $3.000, pagado previamente y no reembolsable. Al recibir la prenda podrás revisarla, pagar su valor mediante transferencia o efectivo y probártela. Si decides no quedártela, deberás devolverla en ese mismo momento y se reembolsará el valor de la prenda. El costo del envío no se devuelve.",
   confirmationNote:
-    "La disponibilidad, las medidas, el costo de entrega y las condiciones finales se confirman directamente antes de coordinar el pago.",
+    "Stock, talla, medidas y entrega se confirman previamente. El envío dentro de Santiago cuesta $3.000, se paga antes y no es reembolsable. La prenda se paga al recibirla mediante transferencia o efectivo; puedes probártela y, si no te la quedas, debes devolverla inmediatamente durante la misma entrega para recibir el reembolso del valor de la prenda.",
   publicSiteUrl: "https://marioexe-rm.github.io/santokio/",
   socialImageUrl:
     "https://marioexe-rm.github.io/santokio/assets/catalogo/1/frontal_1.jpeg",
@@ -64,22 +68,6 @@ export const products = [
     },
     images: [
       {
-        src: "assets/catalogo/1/frontal_1.jpeg",
-        kind: "real-product-photo",
-        width: 4284,
-        height: 5712,
-        alt: "Falda extendida sobre una superficie de madera, con paneles de patrones gráficos en tonos oscuros, verdes, morados y claros.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
-        src: "assets/catalogo/1/trasera_1.jpeg",
-        kind: "real-product-photo",
-        width: 5712,
-        height: 4284,
-        alt: "Otra fotografía de la falda extendida sobre una superficie de madera, tomada desde arriba.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
         src: "assets/catalogo/1/tercer_resultado.png",
         kind: "ai-model-visualization",
         width: 1122,
@@ -102,6 +90,22 @@ export const products = [
         height: 1402,
         alt: "Tercera visualización referencial generada con IA de una modelo con una prenda inspirada en la Pieza 01.",
         disclosure: AI_DISCLOSURE,
+      },
+      {
+        src: "assets/catalogo/1/frontal_1.jpeg",
+        kind: "real-product-photo",
+        width: 4284,
+        height: 5712,
+        alt: "Falda extendida sobre una superficie de madera, con paneles de patrones gráficos en tonos oscuros, verdes, morados y claros.",
+        disclosure: "Fotografía real de la prenda disponible.",
+      },
+      {
+        src: "assets/catalogo/1/trasera_1.jpeg",
+        kind: "real-product-photo",
+        width: 5712,
+        height: 4284,
+        alt: "Otra fotografía de la falda extendida sobre una superficie de madera, tomada desde arriba.",
+        disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
     editableNotes:
@@ -147,22 +151,6 @@ export const products = [
     },
     images: [
       {
-        src: "assets/catalogo/2/frontal_2.jpeg",
-        kind: "real-product-photo",
-        width: 4284,
-        height: 5712,
-        alt: "Falda clara con motivo floral, pliegues verticales y un volante, extendida sobre una superficie de madera.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
-        src: "assets/catalogo/2/trasera_2.jpeg",
-        kind: "real-product-photo",
-        width: 4284,
-        height: 5712,
-        alt: "Otra fotografía de la falda clara con motivo floral extendida sobre una superficie de madera.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
         src: "assets/catalogo/2/tercer_resultado.png",
         kind: "ai-model-visualization",
         width: 1122,
@@ -185,6 +173,22 @@ export const products = [
         height: 1402,
         alt: "Tercera visualización referencial generada con IA de una modelo con una prenda inspirada en la Pieza 02.",
         disclosure: AI_DISCLOSURE,
+      },
+      {
+        src: "assets/catalogo/2/frontal_2.jpeg",
+        kind: "real-product-photo",
+        width: 4284,
+        height: 5712,
+        alt: "Falda clara con motivo floral, pliegues verticales y un volante, extendida sobre una superficie de madera.",
+        disclosure: "Fotografía real de la prenda disponible.",
+      },
+      {
+        src: "assets/catalogo/2/trasera_2.jpeg",
+        kind: "real-product-photo",
+        width: 4284,
+        height: 5712,
+        alt: "Otra fotografía de la falda clara con motivo floral extendida sobre una superficie de madera.",
+        disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
     editableNotes:
@@ -230,22 +234,6 @@ export const products = [
     },
     images: [
       {
-        src: "assets/catalogo/3/frontal.jpeg",
-        kind: "real-product-photo",
-        width: 4284,
-        height: 5712,
-        alt: "Falda clara con superficie texturada, dos detalles de botón y una terminación semitransparente, extendida sobre madera.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
-        src: "assets/catalogo/3/trasera.jpeg",
-        kind: "real-product-photo",
-        width: 4284,
-        height: 5712,
-        alt: "Otra fotografía de la falda clara y texturada extendida sobre una superficie de madera.",
-        disclosure: "Fotografía real de la prenda disponible.",
-      },
-      {
         src: "assets/catalogo/3/ChatGPT Image 24 may 2026, 02_11_27 a.m..png",
         kind: "ai-model-visualization",
         width: 1122,
@@ -268,6 +256,22 @@ export const products = [
         height: 1402,
         alt: "Tercera visualización referencial generada con IA de una modelo con una prenda inspirada en la Pieza 03.",
         disclosure: AI_DISCLOSURE,
+      },
+      {
+        src: "assets/catalogo/3/frontal.jpeg",
+        kind: "real-product-photo",
+        width: 4284,
+        height: 5712,
+        alt: "Falda clara con superficie texturada, dos detalles de botón y una terminación semitransparente, extendida sobre madera.",
+        disclosure: "Fotografía real de la prenda disponible.",
+      },
+      {
+        src: "assets/catalogo/3/trasera.jpeg",
+        kind: "real-product-photo",
+        width: 4284,
+        height: 5712,
+        alt: "Otra fotografía de la falda clara y texturada extendida sobre una superficie de madera.",
+        disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
     editableNotes:

@@ -1,4 +1,4 @@
-# Santokio
+# Santokyo
 
 Landing editorial y catálogo estático para una selección pequeña de prendas nuevas importadas desde Japón. El sitio prioriza fotografías reales, datos verificables y consulta directa por WhatsApp; no incluye carrito, checkout, pagos en línea ni backend.
 
@@ -7,7 +7,7 @@ Landing editorial y catálogo estático para una selección pequeña de prendas 
 ```text
 index.html                 estructura semántica, secciones y diálogo
 styles.css                 sistema visual, responsive y estados
-script.js                  render, búsqueda, orden, galería, foco y WhatsApp
+script.js                  render, carruseles, anclas, galería, foco y enlaces externos
 data/products.js           configuración comercial y catálogo centralizado
 assets/fonts/              Funnel Sans autoalojada y licencia OFL
 assets/catalogo/           copias públicas sin metadatos privados
@@ -36,14 +36,16 @@ http://127.0.0.1:8000/
 
 No abras `index.html` directamente con `file://`: los módulos ES necesitan un servidor HTTP.
 
-## Configurar WhatsApp y entrega
+## Configurar contacto y entrega
 
 Edita `SITE_CONFIG` en `data/products.js`:
 
 - `whatsappNumber`: número internacional sin `+`, espacios ni guiones;
 - `generalWhatsappMessage`: mensaje del contacto general;
+- `instagramUrl` y `instagramLabel`: destino y nombre accesible compartidos por navbar y footer;
+- `shippingCostClp`: costo fijo vigente del envío;
 - `delivery`: modalidad vigente;
-- `confirmationNote`: información que se confirma antes del pago.
+- `confirmationNote`: resumen que aparece en cada ficha.
 
 El mensaje por producto se genera en `makeProductWhatsappUrl()` dentro de `script.js` e incluye automáticamente `name` e `id`.
 
@@ -78,9 +80,9 @@ No uses una visualización generada con IA para deducir talla, composición, med
 2. Agrega las fotografías sin modificar, renombrar, convertir ni sobrescribir los archivos originales.
 3. Crea un objeto nuevo en el arreglo `products`.
 4. Genera copias públicas en `assets/catalogo/[N]/`, eliminando EXIF, GPS y otros metadatos privados sin sobrescribir los originales.
-5. Selecciona como primera imagen y principal una fotografía real de la prenda.
+5. Ordena primero las tres visualizaciones IA y después las dos fotografías reales disponibles, sin duplicar archivos.
 6. Clasifica cada activo con `kind: "real-product-photo"` o `kind: "ai-model-visualization"`.
-7. Completa un `alt` descriptivo y conciso; para IA, agrega además el aviso referencial centralizado en `disclosure`.
+7. Completa un `alt` descriptivo y conciso; para IA, agrega además el aviso referencial centralizado en `disclosure`. Las tarjetas usan solo las imágenes IA y las fotografías reales permanecen en el detalle.
 8. Completa `availability`, `availabilityConfirmed` y cada estado de `fieldVerification` con evidencia real.
 9. Levanta el servidor, abre la tarjeta y recorre toda la galería para revisar rutas, orden, avisos y WhatsApp.
 
@@ -101,7 +103,8 @@ Confirma que:
 
 - cada carpeta directa de `ropa/` tenga exactamente un objeto;
 - todas las rutas con espacios y caracteres especiales carguen mediante HTTP;
-- la primera imagen sea real;
+- cada producto tenga, cuando los activos existan, tres imágenes IA seguidas de dos fotografías reales;
+- portada y tarjetas no usen fotografías reales;
 - cada visualización IA tenga aviso visible en el detalle;
 - no existan rutas absolutas del computador;
 - no se publiquen placeholders como si fueran datos confirmados.
@@ -114,7 +117,7 @@ node --check data/products.js
 git status --short
 ```
 
-La revisión visual debe cubrir, como mínimo, `360 × 800`, `768 × 1024` y `1440 × 900`, además de teclado, Escape, retorno de foco, búsqueda sin resultados, limpiar filtros, todas las galerías y enlaces de WhatsApp.
+La revisión visual debe cubrir, como mínimo, `360 × 800`, `390 × 844`, `430 × 932`, `768 × 1024` y `1440 × 900`, además de teclado, Escape, retorno de foco, búsqueda sin resultados, limpiar filtros, carruseles, anclas, galerías y enlaces externos.
 
 ## Despliegue estático
 
@@ -143,11 +146,11 @@ Agrégalos solo cuando esos datos estén verificados.
 - La consulta no constituye una reserva automática.
 - No hay cuenta, carrito, checkout, pago en línea ni seguimiento de entrega.
 - No existe un panel para editar productos; los cambios se hacen en el archivo de datos.
-- Las políticas de cambios, devoluciones, pruebas y duración de reservas todavía no están definidas.
+- El envío dentro de Santiago cuesta $3.000, se paga previamente y no es reembolsable. La decisión sobre la prenda se toma durante la misma entrega; no existe un plazo de devolución posterior documentado.
 - Las imágenes originales contienen metadatos privados y quedan excluidas de Git; sólo se publican copias saneadas.
 - `ropa/` pesa aproximadamente 55 MB y las fotografías documentales tienen resolución
-  original. El hero prioriza una sola imagen y difiere el anticipo secundario hasta
-  después de la carga principal, pero un despliegue real deberá definir derivados
+  original. El hero rota tres visualizaciones IA del producto destacado y precarga
+  la siguiente, pero un despliegue real deberá definir derivados
   responsivos no destructivos con autorización explícita.
 
 ## Posibles pasos futuros

@@ -12,6 +12,11 @@ const yenFormatter = new Intl.NumberFormat("ja-JP", {
   maximumFractionDigits: 0,
 });
 
+const AI_IMAGE_KIND = "ai-model-visualization";
+const REAL_IMAGE_KIND = "real-product-photo";
+const HERO_ROTATION_MS = 4000;
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
 const state = {
   query: "",
   sort: "featured",
@@ -20,12 +25,20 @@ const state = {
   lastFocused: null,
   scrollPosition: 0,
   pointerStartX: null,
+  cardImageIndices: new Map(),
+  heroProduct: null,
+  heroSlides: [],
+  heroSlideIndex: 0,
+  heroTimer: null,
+  bodyInlineStyles: null,
+  documentLocked: false,
 };
 
 const elements = {
   header: document.querySelector("[data-header]"),
   menuToggle: document.querySelector("[data-menu-toggle]"),
   navigation: document.querySelector("[data-navigation]"),
+  heroSequence: document.querySelector("[data-hero-sequence]"),
   heroPrimary: document.querySelector("[data-hero-primary]"),
   heroPreview: document.querySelector("[data-hero-preview]"),
   pieceIndex: document.querySelector("[data-piece-index]"),
@@ -38,6 +51,7 @@ const elements = {
   productList: document.querySelector("[data-product-list]"),
   emptyState: document.querySelector("[data-empty-state]"),
   generalWhatsappLinks: document.querySelectorAll("[data-general-whatsapp]"),
+  instagramLinks: document.querySelectorAll("[data-instagram]"),
   currentYear: document.querySelector("[data-current-year]"),
   dialog: document.querySelector("[data-product-dialog]"),
   dialogClose: document.querySelector("[data-dialog-close]"),
@@ -56,6 +70,9 @@ const elements = {
   galleryNext: document.querySelector("[data-gallery-next]"),
   galleryPosition: document.querySelector("[data-gallery-position]"),
   galleryThumbnails: document.querySelector("[data-gallery-thumbnails]"),
+  confirmationNote: document.querySelector("[data-confirmation-note]"),
+  dialogShell: document.querySelector(".dialog-shell"),
+  dialogProduct: document.querySelector(".dialog-product"),
 };
 
 let productObserver;
@@ -125,13 +142,22 @@ function formatMeasurements(product) {
 }
 
 function getRealImages(product) {
-  return product.images.filter(
-    (image) => image.kind === "real-product-photo",
-  );
+  return product.images.filter((image) => image.kind === REAL_IMAGE_KIND);
 }
 
-function getPrimaryImage(product) {
-  return getRealImages(product)[0] ?? product.images[0];
+function getAiImages(product) {
+  return product.images.filter((image) => image.kind === AI_IMAGE_KIND);
+}
+
+function getOrderedImages(product) {
+  const aiImages = getAiImages(product);
+  const realImages = getRealImages(product);
+  const classifiedImages = new Set([...aiImages, ...realImages]);
+  const otherImages = product.images.filter(
+    (image) => !classifiedImages.has(image),
+  );
+
+  return [...aiImages, ...realImages, ...otherImages];
 }
 
 function makeWhatsappUrl(message) {
@@ -144,8 +170,7 @@ function makeProductWhatsappUrl(product) {
   );
 }
 
-function renderHeroProduct(product, index, priority = false) {
-  const image = getPrimaryImage(product);
+function renderHeroSlide(product, productIndex, image, slideIndex, priority = false) {
   const loading = priority ? "eager" : "lazy";
   const fetchPriority = priority
     ? ' fetchpriority="high"'
@@ -156,7 +181,10 @@ function renderHeroProduct(product, index, priority = false) {
       class="hero-product-link"
       href="#producto-${escapeHtml(product.slug)}"
       data-open-product="${escapeHtml(product.id)}"
-      aria-label="Abrir detalle de ${escapeHtml(product.name)}"
+      data-hero-slide="${slideIndex}"
+      aria-label="Abrir detalle de ${escapeHtml(product.name)} desde la visualización ${
+        slideIndex + 1
+      } de ${state.heroSlides.length}"
     >
       <figure>
         <img
@@ -168,7 +196,7 @@ function renderHeroProduct(product, index, priority = false) {
           decoding="async"${fetchPriority}
         >
         <figcaption>
-          <span>${formatIndex(index)} · ${escapeHtml(product.name)}</span>
+          <span>${formatIndex(productIndex)} · ${escapeHtml(product.name)}</span>
           <span>${escapeHtml(formatPrice(product))}</span>
         </figcaption>
       </figure>
@@ -176,42 +204,90 @@ function renderHeroProduct(product, index, priority = false) {
   `;
 }
 
-function renderDeferredHeroPreview(product, index) {
-  const render = () => {
-    const commit = () => {
-      elements.heroPreview.innerHTML = renderHeroProduct(product, index);
-      elements.heroPreview.removeAttribute("aria-busy");
-    };
+function preloadHeroImage(image) {
+  const preload = new Image();
+  preload.decoding = "async";
+  preload.src = image.src;
+  preload.decode?.().catch(() => {});
+}
 
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(commit, { timeout: 800 });
-    } else {
-      window.setTimeout(commit, 0);
-    }
-  };
+function renderHeroFrame({ animate = false } = {}) {
+  if (!state.heroProduct || state.heroSlides.length === 0) {
+    return;
+  }
 
-  if (document.readyState === "complete") {
-    render();
-  } else {
-    window.addEventListener("load", render, { once: true });
+  const productIndex = products.indexOf(state.heroProduct);
+  const currentIndex = state.heroSlideIndex;
+  const nextIndex = (currentIndex + 1) % state.heroSlides.length;
+
+  if (animate && !reducedMotionQuery.matches) {
+    elements.heroPrimary.classList.add("is-transition-reset");
+  }
+
+  elements.heroPrimary.innerHTML = renderHeroSlide(
+    state.heroProduct,
+    productIndex,
+    state.heroSlides[currentIndex],
+    currentIndex,
+    true,
+  );
+  elements.heroPreview.innerHTML = renderHeroSlide(
+    state.heroProduct,
+    productIndex,
+    state.heroSlides[nextIndex],
+    nextIndex,
+  );
+
+  if (animate && !reducedMotionQuery.matches) {
+    void elements.heroPrimary.offsetWidth;
+    elements.heroPrimary.classList.remove("is-transition-reset");
+  }
+
+  preloadHeroImage(state.heroSlides[(nextIndex + 1) % state.heroSlides.length]);
+}
+
+function stopHeroRotation() {
+  if (state.heroTimer !== null) {
+    window.clearTimeout(state.heroTimer);
+    state.heroTimer = null;
   }
 }
 
-function renderHero() {
-  const primaryProduct = products.find((product) => product.featured) ?? products[0];
-  const primaryIndex = products.indexOf(primaryProduct);
-  const previewProduct =
-    products.find((product) => product.id !== primaryProduct.id) ?? primaryProduct;
-  const previewIndex = products.indexOf(previewProduct);
+function scheduleHeroRotation() {
+  stopHeroRotation();
 
-  elements.heroPrimary.innerHTML = renderHeroProduct(
-    primaryProduct,
-    primaryIndex,
-    true,
-  );
-  elements.heroPreview.innerHTML = "";
-  elements.heroPreview.setAttribute("aria-busy", "true");
-  renderDeferredHeroPreview(previewProduct, previewIndex);
+  if (
+    reducedMotionQuery.matches ||
+    document.hidden ||
+    state.heroSlides.length < 2
+  ) {
+    return;
+  }
+
+  state.heroTimer = window.setTimeout(() => {
+    state.heroTimer = null;
+    if (reducedMotionQuery.matches || document.hidden) {
+      scheduleHeroRotation();
+      return;
+    }
+
+    state.heroSlideIndex = (state.heroSlideIndex + 1) % state.heroSlides.length;
+    renderHeroFrame({ animate: true });
+    scheduleHeroRotation();
+  }, HERO_ROTATION_MS);
+}
+
+function renderHero() {
+  state.heroProduct =
+    products.find((product) => product.featured) ?? products[0] ?? null;
+  state.heroSlides = state.heroProduct
+    ? getAiImages(state.heroProduct).slice(0, 3)
+    : [];
+  state.heroSlideIndex = 0;
+  elements.heroSequence.dataset.heroSlideCount = String(state.heroSlides.length);
+  renderHeroFrame();
+  state.heroSlides.forEach(preloadHeroImage);
+  scheduleHeroRotation();
 
   elements.pieceIndex.innerHTML = products
     .map(
@@ -260,7 +336,12 @@ function getVisibleProducts() {
 
 function renderProductCard(product) {
   const originalIndex = products.indexOf(product);
-  const image = getPrimaryImage(product);
+  const cardImages = getAiImages(product).slice(0, 3);
+  const storedImageIndex = state.cardImageIndices.get(product.id) ?? 0;
+  const cardImageIndex = cardImages.length
+    ? storedImageIndex % cardImages.length
+    : 0;
+  const image = cardImages[cardImageIndex] ?? product.images[0];
   const size =
     product.fieldVerification.size === VERIFICATION.VERIFIED && product.size
       ? product.size
@@ -287,6 +368,7 @@ function renderProductCard(product) {
             loading="lazy"
             decoding="async"
             fetchpriority="low"
+            data-card-image
           >
           <span class="product-open-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
@@ -294,6 +376,29 @@ function renderProductCard(product) {
             </svg>
           </span>
         </button>
+        <button
+          class="card-carousel-control card-carousel-previous"
+          type="button"
+          data-card-previous="${escapeHtml(product.id)}"
+          aria-label="Imagen anterior de ${escapeHtml(product.name)}"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7"></path>
+          </svg>
+        </button>
+        <button
+          class="card-carousel-control card-carousel-next"
+          type="button"
+          data-card-next="${escapeHtml(product.id)}"
+          aria-label="Imagen siguiente de ${escapeHtml(product.name)}"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+        <span class="visually-hidden" aria-live="polite" data-card-position>
+          Visualización ${cardImageIndex + 1} de ${cardImages.length} de ${escapeHtml(product.name)}
+        </span>
       </div>
       <div class="product-summary">
         <div>
@@ -332,6 +437,33 @@ function renderProductCard(product) {
       </div>
     </article>
   `;
+}
+
+function changeCardImage(productId, offset) {
+  const product = products.find((candidate) => candidate.id === productId);
+  const cardImages = product ? getAiImages(product).slice(0, 3) : [];
+  const productEntry = elements.productList.querySelector(
+    `[data-product-entry="${CSS.escape(productId)}"]`,
+  );
+
+  if (!product || cardImages.length === 0 || !productEntry) {
+    return;
+  }
+
+  const currentIndex = state.cardImageIndices.get(productId) ?? 0;
+  const nextIndex = (currentIndex + offset + cardImages.length) % cardImages.length;
+  const image = cardImages[nextIndex];
+  const cardImage = productEntry.querySelector("[data-card-image]");
+  const cardPosition = productEntry.querySelector("[data-card-position]");
+
+  state.cardImageIndices.set(productId, nextIndex);
+  cardImage.src = image.src;
+  cardImage.alt = image.alt;
+  cardImage.width = image.width;
+  cardImage.height = image.height;
+  cardPosition.textContent = `Visualización ${nextIndex + 1} de ${
+    cardImages.length
+  } de ${product.name}`;
 }
 
 function renderCatalogue() {
@@ -469,7 +601,7 @@ function renderDialogProduct(product) {
 }
 
 function imageKindLabel(image) {
-  return image.kind === "real-product-photo"
+  return image.kind === REAL_IMAGE_KIND
     ? "fotografía real de la prenda"
     : "visualización referencial generada con IA";
 }
@@ -480,44 +612,63 @@ function renderGallery() {
     return;
   }
 
-  const image = product.images[state.galleryIndex];
-  const isAi = image.kind === "ai-model-visualization";
+  const orderedImages = getOrderedImages(product);
+  const image = orderedImages[state.galleryIndex];
+  const isAi = image.kind === AI_IMAGE_KIND;
 
   elements.galleryImage.src = image.src;
   elements.galleryImage.fetchPriority = "high";
   elements.galleryImage.alt = image.alt;
   elements.galleryImage.width = image.width;
   elements.galleryImage.height = image.height;
-  elements.galleryCaption.textContent = image.disclosure;
+  elements.galleryCaption.textContent = isAi ? image.disclosure : "";
+  elements.galleryCaption.hidden = !isAi;
+  if (isAi) {
+    elements.galleryImage.setAttribute("aria-describedby", "gallery-caption");
+  } else {
+    elements.galleryImage.removeAttribute("aria-describedby");
+  }
   elements.galleryStage.classList.toggle("is-ai", isAi);
   elements.galleryPosition.textContent = `${state.galleryIndex + 1} de ${
-    product.images.length
-  } · ${imageKindLabel(image)}`;
+    orderedImages.length
+  }`;
 
-  elements.galleryThumbnails.innerHTML = product.images
-    .map(
-      (thumbnail, index) => `
-        <button
-          class="gallery-thumbnail"
-          type="button"
-          data-gallery-thumbnail="${index}"
-          data-kind="${escapeHtml(thumbnail.kind)}"
-          aria-label="Mostrar imagen ${index + 1}: ${escapeHtml(imageKindLabel(thumbnail))}"
-          aria-current="${index === state.galleryIndex ? "true" : "false"}"
-        >
-          <img
-            src="${escapeHtml(thumbnail.src)}"
-            alt=""
-            width="${thumbnail.width}"
-            height="${thumbnail.height}"
-            loading="lazy"
-            decoding="async"
-            fetchpriority="low"
+  if (elements.galleryThumbnails.dataset.productId !== product.id) {
+    elements.galleryThumbnails.innerHTML = orderedImages
+      .map(
+        (thumbnail, index) => `
+          <button
+            class="gallery-thumbnail"
+            type="button"
+            data-gallery-thumbnail="${index}"
+            data-kind="${escapeHtml(thumbnail.kind)}"
+            aria-label="Mostrar imagen ${index + 1}: ${escapeHtml(imageKindLabel(thumbnail))}"
+            aria-current="false"
           >
-        </button>
-      `,
-    )
-    .join("");
+            <img
+              src="${escapeHtml(thumbnail.src)}"
+              alt=""
+              width="${thumbnail.width}"
+              height="${thumbnail.height}"
+              loading="lazy"
+              decoding="async"
+              fetchpriority="low"
+            >
+          </button>
+        `,
+      )
+      .join("");
+    elements.galleryThumbnails.dataset.productId = product.id;
+  }
+
+  elements.galleryThumbnails
+    .querySelectorAll("[data-gallery-thumbnail]")
+    .forEach((thumbnail, index) => {
+      thumbnail.setAttribute(
+        "aria-current",
+        index === state.galleryIndex ? "true" : "false",
+      );
+    });
 }
 
 function showGalleryImage(index) {
@@ -525,7 +676,7 @@ function showGalleryImage(index) {
     return;
   }
 
-  const total = state.activeProduct.images.length;
+  const total = getOrderedImages(state.activeProduct).length;
   state.galleryIndex = (index + total) % total;
   renderGallery();
 }
@@ -541,24 +692,67 @@ function showAdjacentProduct(offset) {
   state.galleryIndex = 0;
   renderDialogProduct(state.activeProduct);
   renderGallery();
+  resetDialogScroll();
 }
 
 function lockDocument() {
   state.scrollPosition = window.scrollY;
+  state.bodyInlineStyles = {
+    top: document.body.style.top,
+    width: document.body.style.width,
+    paddingRight: document.body.style.paddingRight,
+  };
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
   document.body.style.top = `-${state.scrollPosition}px`;
+  document.body.style.width = "100%";
+  if (scrollbarWidth > 0) {
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+  }
   document.body.classList.add("dialog-open");
+  state.documentLocked = true;
   elements.header.inert = true;
   document.querySelector("main").inert = true;
   document.querySelector(".site-footer").inert = true;
 }
 
 function unlockDocument() {
+  if (!state.documentLocked) {
+    return;
+  }
+
+  const savedScrollY = state.scrollPosition;
+  document.documentElement.classList.add("is-restoring-scroll");
   elements.header.inert = false;
   document.querySelector("main").inert = false;
   document.querySelector(".site-footer").inert = false;
   document.body.classList.remove("dialog-open");
-  document.body.style.top = "";
-  window.scrollTo({ top: state.scrollPosition, left: 0, behavior: "auto" });
+  document.body.style.top = state.bodyInlineStyles?.top ?? "";
+  document.body.style.width = state.bodyInlineStyles?.width ?? "";
+  document.body.style.paddingRight = state.bodyInlineStyles?.paddingRight ?? "";
+  state.bodyInlineStyles = null;
+  window.scrollTo({ top: savedScrollY, left: 0, behavior: "auto" });
+  state.documentLocked = false;
+}
+
+function focusWithoutScroll(target, savedScrollY) {
+  if (!(target instanceof HTMLElement) || !target.isConnected) {
+    return;
+  }
+
+  try {
+    target.focus({ preventScroll: true });
+  } catch {
+    target.focus();
+  }
+
+  if (window.scrollY !== savedScrollY) {
+    window.scrollTo({ top: savedScrollY, left: 0, behavior: "auto" });
+  }
+}
+
+function resetDialogScroll() {
+  elements.dialogShell.scrollTop = 0;
+  elements.dialogProduct.scrollTop = 0;
 }
 
 function openProduct(productId, trigger) {
@@ -574,25 +768,33 @@ function openProduct(productId, trigger) {
   renderGallery();
   lockDocument();
   elements.dialog.showModal();
-  requestAnimationFrame(() => elements.dialogClose.focus());
+  resetDialogScroll();
+  elements.dialogClose.focus({ preventScroll: true });
 }
 
 function closeProduct() {
   if (elements.dialog.open) {
     elements.dialog.close();
+    handleDialogClosed();
   }
 }
 
 function handleDialogClosed() {
-  unlockDocument();
+  if (!state.documentLocked) {
+    return;
+  }
+
+  const savedScrollY = state.scrollPosition;
   const returnTarget = state.lastFocused;
+  unlockDocument();
   state.activeProduct = null;
   state.galleryIndex = 0;
   state.lastFocused = null;
 
-  if (returnTarget instanceof HTMLElement && returnTarget.isConnected) {
-    returnTarget.focus();
-  }
+  focusWithoutScroll(returnTarget, savedScrollY);
+  queueMicrotask(() => {
+    document.documentElement.classList.remove("is-restoring-scroll");
+  });
 }
 
 function trapDialogFocus(event) {
@@ -640,6 +842,133 @@ function toggleMobileNavigation() {
   );
 }
 
+function getSectionAlignmentMode(sectionId) {
+  return (
+    {
+      coleccion: "collection",
+      "como-comprar": "how-to-buy",
+      preguntas: "faq",
+      contacto: "contact",
+    }[sectionId] ?? "default"
+  );
+}
+
+function getDocumentMaximumScroll() {
+  return Math.max(
+    0,
+    document.documentElement.scrollHeight - window.innerHeight,
+  );
+}
+
+function getPageTop(element) {
+  return element.getBoundingClientRect().top + window.scrollY;
+}
+
+function navigateToSection(
+  sectionId,
+  alignmentMode = getSectionAlignmentMode(sectionId),
+  { updateHistory = true, behavior } = {},
+) {
+  const section = document.getElementById(sectionId);
+  if (!section) {
+    return false;
+  }
+
+  const headerHeight = elements.header.getBoundingClientRect().height;
+  const availableHeight = Math.max(0, window.innerHeight - headerHeight);
+  const maximumScroll = getDocumentMaximumScroll();
+  let destination = 0;
+
+  if (alignmentMode === "contact") {
+    destination = maximumScroll;
+  } else if (alignmentMode === "how-to-buy") {
+    const contentStart = section.querySelector(".section-heading") ?? section;
+    const contentEnd = section.querySelector(".process-list") ?? section;
+    const contentTop = getPageTop(contentStart);
+    const contentBottom =
+      contentEnd.getBoundingClientRect().bottom + window.scrollY;
+    const contentHeight = contentBottom - contentTop;
+    const verticalInset =
+      contentHeight + 32 <= availableHeight
+        ? (availableHeight - contentHeight) / 2
+        : 16;
+    destination = contentTop - headerHeight - verticalInset;
+  } else if (alignmentMode === "collection" || alignmentMode === "faq") {
+    const heading = section.querySelector("h2") ?? section;
+    const offset = alignmentMode === "collection" ? 20 : 24;
+    destination = getPageTop(heading) - headerHeight - offset;
+  } else if (sectionId === "inicio") {
+    destination = 0;
+  } else {
+    const heading = section.querySelector("h1, h2") ?? section;
+    destination = getPageTop(heading) - headerHeight - 20;
+  }
+
+  destination = Math.min(maximumScroll, Math.max(0, destination));
+
+  if (updateHistory) {
+    const nextHash = `#${encodeURIComponent(sectionId)}`;
+    if (window.location.hash !== nextHash) {
+      window.history.pushState({ sectionId }, "", nextHash);
+    } else {
+      window.history.replaceState({ sectionId }, "", nextHash);
+    }
+  }
+
+  window.scrollTo({
+    top: destination,
+    left: 0,
+    behavior: behavior ?? (reducedMotionQuery.matches ? "auto" : "smooth"),
+  });
+  return true;
+}
+
+function handleInternalNavigation(event) {
+  const anchor = event.target.closest('a[href^="#"]');
+  if (
+    !anchor ||
+    anchor.classList.contains("skip-link") ||
+    anchor.hasAttribute("data-open-product")
+  ) {
+    return;
+  }
+
+  const href = anchor.getAttribute("href");
+  if (!href || href === "#") {
+    return;
+  }
+
+  let sectionId;
+  try {
+    sectionId = decodeURIComponent(href.slice(1));
+  } catch {
+    return;
+  }
+
+  if (!document.getElementById(sectionId)) {
+    return;
+  }
+
+  event.preventDefault();
+  navigateToSection(sectionId, getSectionAlignmentMode(sectionId));
+}
+
+function handleHistoryNavigation() {
+  let sectionId = "inicio";
+  try {
+    sectionId = window.location.hash
+      ? decodeURIComponent(window.location.hash.slice(1))
+      : "inicio";
+  } catch {
+    sectionId = "inicio";
+  }
+
+  navigateToSection(sectionId, getSectionAlignmentMode(sectionId), {
+    updateHistory: false,
+    behavior: "auto",
+  });
+}
+
 function clearFilters({ focusSearch = false } = {}) {
   state.query = "";
   elements.search.value = "";
@@ -671,6 +1000,13 @@ function bindEvents() {
     }
   });
 
+  document.addEventListener("visibilitychange", scheduleHeroRotation);
+  if (typeof reducedMotionQuery.addEventListener === "function") {
+    reducedMotionQuery.addEventListener("change", scheduleHeroRotation);
+  } else {
+    reducedMotionQuery.addListener(scheduleHeroRotation);
+  }
+
   elements.search.addEventListener("input", (event) => {
     state.query = event.currentTarget.value;
     renderCatalogue();
@@ -690,6 +1026,23 @@ function bindEvents() {
     clearFilters({ focusSearch: true }),
   );
 
+  elements.productList.addEventListener("click", (event) => {
+    const previous = event.target.closest("[data-card-previous]");
+    const next = event.target.closest("[data-card-next]");
+    const control = previous ?? next;
+
+    if (!control) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    changeCardImage(
+      previous ? previous.dataset.cardPrevious : next.dataset.cardNext,
+      previous ? -1 : 1,
+    );
+  });
+
   document.addEventListener("click", (event) => {
     const openTrigger = event.target.closest("[data-open-product]");
     if (openTrigger) {
@@ -697,6 +1050,8 @@ function bindEvents() {
       openProduct(openTrigger.dataset.openProduct, openTrigger);
     }
   });
+  document.addEventListener("click", handleInternalNavigation);
+  window.addEventListener("popstate", handleHistoryNavigation);
 
   elements.dialogClose.addEventListener("click", closeProduct);
   elements.productPrevious.addEventListener("click", () =>
@@ -791,14 +1146,28 @@ function configureContactLinks() {
   elements.generalWhatsappLinks.forEach((link) => {
     link.href = generalUrl;
   });
+
+  elements.instagramLinks.forEach((link) => {
+    link.href = SITE_CONFIG.instagramUrl;
+    link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
+  });
+
+  elements.confirmationNote.textContent = SITE_CONFIG.confirmationNote;
 }
 
 function init() {
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
   renderHero();
   renderCatalogue();
   configureContactLinks();
   elements.currentYear.textContent = new Date().getFullYear();
   bindEvents();
+
+  if (window.location.hash) {
+    requestAnimationFrame(handleHistoryNavigation);
+  }
 }
 
 init();
