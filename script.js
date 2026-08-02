@@ -40,7 +40,6 @@ const elements = {
   heroSequence: document.querySelector("[data-hero-sequence]"),
   heroPrimary: document.querySelector("[data-hero-primary]"),
   heroPreview: document.querySelector("[data-hero-preview]"),
-  pieceIndex: document.querySelector("[data-piece-index]"),
   catalogueTools: document.querySelector("[data-catalogue-tools]"),
   search: document.querySelector("[data-search]"),
   sort: document.querySelector("[data-sort]"),
@@ -73,8 +72,6 @@ const elements = {
   dialogShell: document.querySelector(".dialog-shell"),
   dialogProduct: document.querySelector(".dialog-product"),
 };
-
-let productObserver;
 
 function escapeHtml(value) {
   return String(value)
@@ -165,7 +162,7 @@ function makeWhatsappUrl(message) {
 
 function makeProductWhatsappUrl(product) {
   return makeWhatsappUrl(
-    `Hola, quisiera consultar por la prenda ${product.name}, referencia ${product.id}. ¿Sigue disponible?`,
+    `Hola, quisiera consultar por ${product.name}, referencia ${product.id}. ¿Sigue disponible?`,
   );
 }
 
@@ -307,23 +304,6 @@ function renderHero() {
   renderHeroFrame();
   scheduleHeroRotation();
 
-  elements.pieceIndex.innerHTML = products
-    .map(
-      (product, index) => `
-        <li>
-          <a
-            href="#producto-${escapeHtml(product.slug)}"
-            class="${index === 0 ? "is-active" : ""}"
-            data-index-link="${escapeHtml(product.id)}"
-          >
-            <span>${formatIndex(index)}</span>
-            <span class="visually-hidden">${escapeHtml(product.name)}</span>
-          </a>
-        </li>
-      `,
-    )
-    .join("");
-
 }
 
 function getVisibleProducts() {
@@ -444,13 +424,25 @@ function renderProductCard(product) {
               <dd><span class="availability">${escapeHtml(formatAvailability(product))}</span></dd>
             </div>
           </dl>
-          <button
-            class="button button-secondary product-detail-button"
-            type="button"
-            data-open-product="${escapeHtml(product.id)}"
-          >
-            Ver detalle
-          </button>
+          <div class="product-actions">
+            <button
+              class="button button-secondary product-detail-button"
+              type="button"
+              data-open-product="${escapeHtml(product.id)}"
+            >
+              Ver detalle
+            </button>
+            <a
+              class="button button-primary product-whatsapp-button"
+              href="${escapeHtml(makeProductWhatsappUrl(product))}"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-product-whatsapp="${escapeHtml(product.id)}"
+              aria-label="Consultar ${escapeHtml(product.name)}, referencia ${escapeHtml(product.id)}, por WhatsApp"
+            >
+              Consultar esta prenda
+            </a>
+          </div>
         </div>
       </div>
     </article>
@@ -500,53 +492,12 @@ function renderCatalogue() {
     state.query,
   );
   elements.clear.disabled = state.query.trim() === "";
-  observeProducts();
 }
 
 function normalizedStatusText(resultLabel, query) {
   return query.trim()
     ? `${resultLabel} para “${query.trim()}”.`
     : `${resultLabel} en la colección.`;
-}
-
-function setActiveIndex(productId) {
-  document.querySelectorAll("[data-index-link]").forEach((link) => {
-    const isActive = link.dataset.indexLink === productId;
-    link.classList.toggle("is-active", isActive);
-    if (isActive) {
-      link.setAttribute("aria-current", "true");
-    } else {
-      link.removeAttribute("aria-current");
-    }
-  });
-}
-
-function observeProducts() {
-  productObserver?.disconnect();
-
-  if (!("IntersectionObserver" in window)) {
-    return;
-  }
-
-  productObserver = new IntersectionObserver(
-    (entries) => {
-      const visibleEntry = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-      if (visibleEntry) {
-        setActiveIndex(visibleEntry.target.dataset.productEntry);
-      }
-    },
-    {
-      rootMargin: "-32% 0px -52% 0px",
-      threshold: [0, 0.1, 0.35],
-    },
-  );
-
-  document
-    .querySelectorAll("[data-product-entry]")
-    .forEach((entry) => productObserver.observe(entry));
 }
 
 function getProductFacts(product) {

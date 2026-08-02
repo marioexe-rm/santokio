@@ -9,7 +9,7 @@ index.html                 estructura semántica, secciones y diálogo
 styles.css                 sistema visual, responsive y estados
 script.js                  render, carruseles, anclas, galería, foco y enlaces externos
 data/products.js           configuración comercial y catálogo centralizado
-assets/fonts/              Funnel Sans e Instrument Serif autoalojadas y licencias OFL
+assets/fonts/              Funnel Sans autoalojada y licencia OFL
 assets/catalogo/           copias públicas sin metadatos privados
 ropa/                      activos fuente locales del inventario, no versionados
 DESIGN.md                  sistema visual implementado
