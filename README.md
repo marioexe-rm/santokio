@@ -9,7 +9,7 @@ index.html                 estructura semántica, secciones y diálogo
 styles.css                 sistema visual, responsive y estados
 script.js                  render, carruseles, anclas, galería, foco y enlaces externos
 data/products.js           configuración comercial y catálogo centralizado
-assets/fonts/              Funnel Sans autoalojada y licencia OFL
+assets/fonts/              Funnel Sans e Instrument Serif autoalojadas y licencias OFL
 assets/catalogo/           copias públicas sin metadatos privados
 ropa/                      activos fuente locales del inventario, no versionados
 DESIGN.md                  sistema visual implementado
@@ -149,8 +149,8 @@ Agrégalos solo cuando esos datos estén verificados.
 - El envío dentro de Santiago cuesta $3.000, se paga previamente y no es reembolsable. La decisión sobre la prenda se toma durante la misma entrega; no existe un plazo de devolución posterior documentado.
 - Las imágenes originales contienen metadatos privados y quedan excluidas de Git; sólo se publican copias saneadas.
 - `ropa/` pesa aproximadamente 55 MB y las fotografías documentales tienen resolución
-  original. El hero rota tres visualizaciones IA del producto destacado y precarga
-  la siguiente, pero un despliegue real deberá definir derivados
+  original. El hero recorre en orden las visualizaciones IA de toda la colección y
+  precarga solo la siguiente, pero un despliegue real deberá definir derivados
   responsivos no destructivos con autorización explícita.
 
 ## Posibles pasos futuros

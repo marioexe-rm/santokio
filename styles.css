@@ -6,6 +6,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("assets/fonts/instrument-serif-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --chalk: #f4f3ef;
   --chalk-bright: #fbfaf7;
@@ -25,6 +33,7 @@
   --rule-inverse-strong: 1px solid rgba(255, 255, 255, 0.45);
   --dialog-scrim: rgba(14, 15, 18, 0.82);
   --font-sans: "Funnel Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, "Times New Roman", serif;
   --space-1: 0.375rem;
   --space-2: 0.625rem;
   --space-3: 0.875rem;
@@ -39,6 +48,9 @@
   --header-height: 4.625rem;
   --rule: 1px solid rgba(23, 24, 26, 0.25);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hero-transition-duration: 760ms;
+  --hero-transition-easing: var(--ease-out);
+  --footer-mobile-bottom-space: 5.5rem;
 }
 
 *,
@@ -66,7 +78,7 @@ body {
   font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -122,9 +134,10 @@ figure {
 h1,
 h2,
 h3 {
-  font-weight: 430;
-  letter-spacing: -0.035em;
-  line-height: 0.98;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.008em;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
@@ -307,6 +320,7 @@ p {
 
 .header-access,
 .header-instagram,
+.menu-toggle,
 .button {
   display: inline-flex;
   min-height: 2.875rem;
@@ -340,7 +354,8 @@ p {
 }
 
 .header-access,
-.header-instagram {
+.header-instagram,
+.menu-toggle {
   background: var(--white);
   color: var(--ink);
 }
@@ -348,7 +363,9 @@ p {
 .header-access:hover,
 .header-access:active,
 .header-instagram:hover,
-.header-instagram:active {
+.header-instagram:active,
+.menu-toggle:hover,
+.menu-toggle:active {
   background: var(--ink);
   color: var(--chalk);
 }
@@ -357,12 +374,14 @@ p {
   flex: 0 0 auto;
 }
 
-.header-instagram {
+.header-instagram,
+.menu-toggle {
   width: 2.875rem;
   padding: 0;
 }
 
-.header-instagram svg {
+.header-instagram svg,
+.menu-toggle svg {
   width: 1.35rem;
   height: 1.35rem;
   fill: none;
@@ -383,22 +402,15 @@ p {
   text-decoration: none;
 }
 
-.footer-contact-link svg {
-  width: 1.35rem;
-  height: 1.35rem;
+.footer-contact-icon {
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
   flex: 0 0 auto;
-}
-
-.footer-contact-link .icon-stroke {
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
-}
-
-.footer-contact-link .icon-fill {
-  fill: currentColor;
 }
 
 .footer-contact-link span {
@@ -415,6 +427,10 @@ p {
 .footer-contact p {
   margin-top: var(--space-1);
   margin-bottom: 0;
+}
+
+.footer-contact-group {
+  display: contents;
 }
 
 .button-primary:hover {
@@ -455,21 +471,6 @@ p {
 
 .menu-toggle {
   display: none;
-  width: 2.875rem;
-  height: 2.875rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--ink);
-  background: transparent;
-}
-
-.menu-toggle svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
 }
 
 main,
@@ -1169,10 +1170,11 @@ main,
   min-height: 4.75rem;
   cursor: pointer;
   align-items: center;
-  padding: 1.2rem 4rem 1.2rem 0;
+  padding: 1.2rem 4rem 1.2rem 1.4rem;
   font-size: clamp(1.05rem, 1.4vw, 1.25rem);
   font-weight: 540;
   list-style: none;
+  transition: color 180ms ease;
 }
 
 .faq summary::-webkit-details-marker {
@@ -1186,7 +1188,7 @@ main,
   right: 1rem;
   width: 1.25rem;
   height: 1px;
-  background: var(--ink);
+  background: currentColor;
   content: "";
   transition: transform 180ms var(--ease-out);
 }
@@ -1195,19 +1197,74 @@ main,
   transform: rotate(90deg);
 }
 
-.faq details[open] summary::after {
+.faq details.is-open summary::after,
+html:not(.js) .faq details[open] summary::after {
   transform: rotate(0);
 }
 
-.faq details[open] summary {
+.faq-bullet {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 1.5rem;
+  background: var(--indigo);
+  opacity: 0;
+  transform: translateY(-50%) scaleY(0.14);
+  transform-origin: center;
+  transition:
+    transform 260ms var(--ease-out),
+    opacity 120ms ease;
+}
+
+.faq summary:hover,
+.faq summary:focus-visible,
+.faq details.is-open summary,
+html:not(.js) .faq details[open] summary {
   color: var(--indigo);
+}
+
+.faq summary:hover .faq-bullet,
+.faq summary:focus-visible .faq-bullet,
+.faq details.is-open summary .faq-bullet,
+html:not(.js) .faq details[open] summary .faq-bullet {
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
 }
 
 .faq details p {
   max-width: 70ch;
   margin-bottom: 0;
-  padding: 0 4rem var(--space-5) 0;
+  padding: 0 4rem var(--space-5) 1.4rem;
   color: var(--ink-soft);
+}
+
+.js .faq .faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--hero-transition-duration) var(--hero-transition-easing),
+    opacity var(--hero-transition-duration) var(--hero-transition-easing);
+}
+
+.js .faq details.is-open .faq-answer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.faq-answer-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.js .faq .faq-answer p {
+  transform: translateY(-0.4rem);
+  transition: transform var(--hero-transition-duration) var(--hero-transition-easing);
+}
+
+.js .faq details.is-open .faq-answer p {
+  transform: translateY(0);
 }
 
 .contact-band {
@@ -1373,6 +1430,12 @@ main,
   background: var(--chalk-bright);
   object-fit: contain;
   object-position: center;
+  transition: opacity 160ms ease;
+}
+
+.gallery-stage.is-updating img {
+  opacity: 0;
+  transition: none;
 }
 
 .gallery-controls,
@@ -1586,7 +1649,8 @@ main,
 }
 
 .hero-primary {
-  animation: hero-image-arrive 760ms 80ms var(--ease-out) both;
+  animation: hero-image-arrive var(--hero-transition-duration) 80ms
+    var(--hero-transition-easing) both;
 }
 
 .hero-primary.is-transition-reset {
@@ -1970,6 +2034,14 @@ main,
 
   .site-footer {
     grid-template-columns: 1fr;
+    padding-bottom: calc(
+      var(--footer-mobile-bottom-space) + env(safe-area-inset-bottom)
+    );
+  }
+
+  .footer-contact-group {
+    display: grid;
+    gap: var(--space-4);
   }
 
   .product-dialog {
@@ -2125,5 +2197,23 @@ main,
     height: 2px;
     transform: scaleX(1);
     animation: none;
+  }
+
+  .js .faq .faq-answer,
+  .js .faq .faq-answer p {
+    transition: none;
+  }
+
+  .js .faq .faq-answer p {
+    transform: none;
+  }
+
+  .faq-bullet {
+    transform: translateY(-50%);
+    transition: opacity 120ms ease;
+  }
+
+  .gallery-stage img {
+    transition: none;
   }
 }

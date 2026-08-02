@@ -15,28 +15,28 @@ colors:
   white: "#ffffff"
 typography:
   display:
-    fontFamily: "Funnel Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
+    fontFamily: "Instrument Serif, Iowan Old Style, Georgia, Times New Roman, serif"
     fontSize: "clamp(3.15rem, 5vw, 5rem)"
-    fontWeight: 430
-    lineHeight: 0.98
-    letterSpacing: "-0.035em"
+    fontWeight: 400
+    lineHeight: 1.02
+    letterSpacing: "-0.008em"
   headline:
-    fontFamily: "Funnel Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
+    fontFamily: "Instrument Serif, Iowan Old Style, Georgia, Times New Roman, serif"
     fontSize: "clamp(2.35rem, 4.35vw, 4.75rem)"
-    fontWeight: 430
-    lineHeight: 0.98
-    letterSpacing: "-0.035em"
+    fontWeight: 400
+    lineHeight: 1.02
+    letterSpacing: "-0.008em"
   title:
-    fontFamily: "Funnel Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
+    fontFamily: "Instrument Serif, Iowan Old Style, Georgia, Times New Roman, serif"
     fontSize: "clamp(1.5rem, 2vw, 2.25rem)"
-    fontWeight: 430
-    lineHeight: 0.98
-    letterSpacing: "-0.035em"
+    fontWeight: 400
+    lineHeight: 1.02
+    letterSpacing: "-0.008em"
   body:
     fontFamily: "Funnel Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.55
+    lineHeight: 1.6
   label:
     fontFamily: "Funnel Sans, Helvetica Neue, Helvetica, Arial, sans-serif"
     fontSize: "0.78rem"
@@ -127,24 +127,24 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 
 ## Typography
 
-**Display Font:** Funnel Sans (con Helvetica Neue, Helvetica, Arial y sans-serif como respaldo)
+**Display Font:** Instrument Serif (con Iowan Old Style, Georgia, Times New Roman y serif como respaldo)
 **Body Font:** Funnel Sans (con Helvetica Neue, Helvetica, Arial y sans-serif como respaldo)
 
-**Character:** Una única sans variable autoalojada cubre desde titulares de trazo ligero hasta etiquetas firmes. La identidad nace del contraste de escala, peso y espaciado, no de mezclar familias.
+**Character:** Una serif editorial autoalojada de un solo peso encabeza titulares y nombres de pieza; la sans variable sostiene lectura, interfaz y datos. El wordmark permanece en Funnel Sans y no comparte la serif con ningún otro elemento.
 
 ### Hierarchy
 
-- **Display** (430, fluido, interlínea 0.98): titular principal contenido en unas once letras por línea.
-- **Headline** (430, fluido, interlínea 0.98): capítulos editoriales de gran escala.
-- **Title** (430, fluido, interlínea 0.98): nombres de piezas y títulos locales.
-- **Body** (400, 1rem, interlínea 1.55): texto corriente con un máximo habitual de 70 caracteres.
-- **Label** (570, 0.78rem, tracking 0.08em): etiquetas funcionales en mayúsculas para búsqueda y orden.
-- **Numeral editorial** (330, fluido, interlínea 0.85): índices de pieza y números de proceso con cifras tabulares.
-- **Wordmark** (620, fluido, tracking 0.2em): nombre SanTokyo en mayúsculas.
+- **Display** (serif 400, fluido, interlínea 1.02): titular principal contenido en unas once letras por línea.
+- **Headline** (serif 400, fluido, interlínea 1.02): capítulos editoriales de gran escala.
+- **Title** (serif 400, fluido, interlínea 1.02): nombres de piezas y títulos locales.
+- **Body** (sans 400, 1rem, interlínea 1.6): texto corriente con un máximo habitual de 70 caracteres.
+- **Label** (sans 570, 0.78rem, tracking 0.08em): etiquetas funcionales en mayúsculas para búsqueda y orden.
+- **Numeral editorial** (sans 330, fluido, interlínea 0.85): índices de pieza y números de proceso con cifras tabulares.
+- **Wordmark** (Funnel Sans 620, fluido, tracking 0.2em): nombre SanTokyo en mayúsculas, aislado del resto del sistema.
 
 ### Named Rules
 
-**The One-Family Rule.** Funnel Sans sostiene display, lectura, etiquetas y datos; la jerarquía cambia por escala y peso, no por una segunda tipografía.
+**The Two-Voices Rule.** Instrument Serif pertenece solo a los encabezados (h1, h2, h3); Funnel Sans sostiene lectura, etiquetas, datos y el wordmark. Ningún componente mezcla ambas voces dentro de un mismo texto.
 
 ## Layout
 
@@ -189,7 +189,7 @@ El encabezado es sticky, tiza y separado por una regla. Los enlaces dibujan una 
 
 ### Panoramic Sequence
 
-La secuencia hero rota cada cuatro segundos las tres visualizaciones IA del producto destacado, muestra la siguiente en un anticipo parcial y conserva el navegador numérico `01—02—03`. Las capas índigo y orquídea se inclinan detrás de las imágenes; el revelado de cada slide reutiliza la entrada inicial y se detiene con movimiento reducido o pestaña oculta.
+La secuencia hero recorre cada cuatro segundos, en orden de catálogo, las tres visualizaciones IA de cada prenda de la colección —un desfile completo que vuelve a la primera al terminar—, muestra la siguiente en un anticipo parcial y conserva el navegador numérico `01—02—03`. Las capas índigo y orquídea se inclinan detrás de las imágenes; el revelado de cada slide reutiliza la entrada inicial (760ms, curva de salida expresiva) y se detiene con movimiento reducido o pestaña oculta.
 
 ### Product Entry
 

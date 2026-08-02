@@ -26,7 +26,6 @@ const state = {
   scrollPosition: 0,
   pointerStartX: null,
   cardImageIndices: new Map(),
-  heroProduct: null,
   heroSlides: [],
   heroSlideIndex: 0,
   heroTimer: null,
@@ -170,7 +169,34 @@ function makeProductWhatsappUrl(product) {
   );
 }
 
-function renderHeroSlide(product, productIndex, image, slideIndex, priority = false) {
+function buildHeroSlides() {
+  const slides = [];
+
+  products.forEach((product, productIndex) => {
+    const aiImages = getAiImages(product);
+
+    if (aiImages.length !== 3) {
+      console.warn(
+        `SanTokyo: ${product.id} tiene ${aiImages.length} visualizaciones IA; el hero esperaba 3 y usa las disponibles.`,
+      );
+    }
+
+    aiImages.forEach((image, imageIndex) => {
+      slides.push({
+        product,
+        productIndex,
+        image,
+        imageIndex,
+        imageCount: aiImages.length,
+      });
+    });
+  });
+
+  return slides;
+}
+
+function renderHeroSlide(slide, slideIndex, priority = false) {
+  const { product, productIndex, image, imageIndex, imageCount } = slide;
   const loading = priority ? "eager" : "lazy";
   const fetchPriority = priority
     ? ' fetchpriority="high"'
@@ -183,8 +209,8 @@ function renderHeroSlide(product, productIndex, image, slideIndex, priority = fa
       data-open-product="${escapeHtml(product.id)}"
       data-hero-slide="${slideIndex}"
       aria-label="Abrir detalle de ${escapeHtml(product.name)} desde la visualización ${
-        slideIndex + 1
-      } de ${state.heroSlides.length}"
+        imageIndex + 1
+      } de ${imageCount}"
     >
       <figure>
         <img
@@ -212,11 +238,10 @@ function preloadHeroImage(image) {
 }
 
 function renderHeroFrame({ animate = false } = {}) {
-  if (!state.heroProduct || state.heroSlides.length === 0) {
+  if (state.heroSlides.length === 0) {
     return;
   }
 
-  const productIndex = products.indexOf(state.heroProduct);
   const currentIndex = state.heroSlideIndex;
   const nextIndex = (currentIndex + 1) % state.heroSlides.length;
 
@@ -225,15 +250,11 @@ function renderHeroFrame({ animate = false } = {}) {
   }
 
   elements.heroPrimary.innerHTML = renderHeroSlide(
-    state.heroProduct,
-    productIndex,
     state.heroSlides[currentIndex],
     currentIndex,
     true,
   );
   elements.heroPreview.innerHTML = renderHeroSlide(
-    state.heroProduct,
-    productIndex,
     state.heroSlides[nextIndex],
     nextIndex,
   );
@@ -243,7 +264,9 @@ function renderHeroFrame({ animate = false } = {}) {
     elements.heroPrimary.classList.remove("is-transition-reset");
   }
 
-  preloadHeroImage(state.heroSlides[(nextIndex + 1) % state.heroSlides.length]);
+  preloadHeroImage(
+    state.heroSlides[(nextIndex + 1) % state.heroSlides.length].image,
+  );
 }
 
 function stopHeroRotation() {
@@ -278,15 +301,10 @@ function scheduleHeroRotation() {
 }
 
 function renderHero() {
-  state.heroProduct =
-    products.find((product) => product.featured) ?? products[0] ?? null;
-  state.heroSlides = state.heroProduct
-    ? getAiImages(state.heroProduct).slice(0, 3)
-    : [];
+  state.heroSlides = buildHeroSlides();
   state.heroSlideIndex = 0;
   elements.heroSequence.dataset.heroSlideCount = String(state.heroSlides.length);
   renderHeroFrame();
-  state.heroSlides.forEach(preloadHeroImage);
   scheduleHeroRotation();
 
   elements.pieceIndex.innerHTML = products
@@ -606,6 +624,57 @@ function imageKindLabel(image) {
     : "visualización referencial generada con IA";
 }
 
+let galleryStageToken = 0;
+
+function invalidateGalleryStage() {
+  galleryStageToken += 1;
+}
+
+function setGalleryStageImage(image) {
+  const token = ++galleryStageToken;
+  const stageImage = elements.galleryImage;
+  const resolvedSrc = new URL(image.src, window.location.href).href;
+  const alreadyShown =
+    stageImage.currentSrc === resolvedSrc &&
+    stageImage.complete &&
+    stageImage.naturalWidth > 0;
+
+  stageImage.fetchPriority = "high";
+  stageImage.alt = image.alt;
+  stageImage.width = image.width;
+  stageImage.height = image.height;
+
+  if (alreadyShown) {
+    elements.galleryStage.classList.remove("is-updating");
+    return;
+  }
+
+  elements.galleryStage.classList.add("is-updating");
+  stageImage.src = image.src;
+
+  const reveal = () => {
+    if (token === galleryStageToken) {
+      elements.galleryStage.classList.remove("is-updating");
+    }
+  };
+  const revealOnceLoaded = () => {
+    if (stageImage.complete) {
+      reveal();
+      return;
+    }
+    stageImage.addEventListener("load", reveal, { once: true });
+    stageImage.addEventListener("error", reveal, { once: true });
+  };
+
+  if (typeof stageImage.decode === "function") {
+    stageImage.decode().then(reveal, revealOnceLoaded);
+  } else {
+    revealOnceLoaded();
+  }
+
+  window.setTimeout(reveal, 2000);
+}
+
 function renderGallery() {
   const product = state.activeProduct;
   if (!product) {
@@ -616,11 +685,7 @@ function renderGallery() {
   const image = orderedImages[state.galleryIndex];
   const isAi = image.kind === AI_IMAGE_KIND;
 
-  elements.galleryImage.src = image.src;
-  elements.galleryImage.fetchPriority = "high";
-  elements.galleryImage.alt = image.alt;
-  elements.galleryImage.width = image.width;
-  elements.galleryImage.height = image.height;
+  setGalleryStageImage(image);
   elements.galleryCaption.textContent = isAi ? image.disclosure : "";
   elements.galleryCaption.hidden = !isAi;
   if (isAi) {
@@ -787,6 +852,7 @@ function handleDialogClosed() {
   const savedScrollY = state.scrollPosition;
   const returnTarget = state.lastFocused;
   unlockDocument();
+  invalidateGalleryStage();
   state.activeProduct = null;
   state.galleryIndex = 0;
   state.lastFocused = null;
@@ -826,6 +892,101 @@ function trapDialogFocus(event) {
   }
 }
 
+const faqCollapseTimers = new Map();
+let heroTransitionMs = 760;
+
+function readHeroTransitionMs() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--hero-transition-duration")
+    .trim();
+  const value = Number.parseFloat(raw);
+
+  if (!Number.isFinite(value)) {
+    return 760;
+  }
+
+  return raw.endsWith("ms") ? value : value * 1000;
+}
+
+function toggleFaqItem(details, summary) {
+  const willOpen = !details.classList.contains("is-open");
+
+  window.clearTimeout(faqCollapseTimers.get(details));
+  faqCollapseTimers.delete(details);
+
+  if (willOpen) {
+    details.open = true;
+    void details.offsetHeight;
+    details.classList.add("is-open");
+    summary.setAttribute("aria-expanded", "true");
+    return;
+  }
+
+  details.classList.remove("is-open");
+  summary.setAttribute("aria-expanded", "false");
+
+  const finalizeCollapse = () => {
+    faqCollapseTimers.delete(details);
+    if (!details.classList.contains("is-open")) {
+      details.open = false;
+    }
+  };
+
+  if (reducedMotionQuery.matches) {
+    finalizeCollapse();
+    return;
+  }
+
+  faqCollapseTimers.set(
+    details,
+    window.setTimeout(finalizeCollapse, heroTransitionMs + 60),
+  );
+}
+
+function initFaq() {
+  heroTransitionMs = readHeroTransitionMs();
+
+  document.querySelectorAll(".faq details").forEach((details) => {
+    const summary = details.querySelector("summary");
+    if (!summary) {
+      return;
+    }
+
+    details.classList.toggle("is-open", details.open);
+    summary.setAttribute("aria-expanded", String(details.open));
+    summary.addEventListener("click", (event) => {
+      event.preventDefault();
+      toggleFaqItem(details, summary);
+    });
+  });
+}
+
+const preloadedProductLeads = new Set();
+
+function preloadProductLead(productId) {
+  if (!productId || preloadedProductLeads.has(productId)) {
+    return;
+  }
+
+  const product = products.find((candidate) => candidate.id === productId);
+  if (!product) {
+    return;
+  }
+
+  preloadedProductLeads.add(productId);
+  const leadImage = getOrderedImages(product)[0];
+  if (leadImage) {
+    preloadHeroImage(leadImage);
+  }
+}
+
+function handleProductLeadPreload(event) {
+  const trigger = event.target.closest?.("[data-open-product]");
+  if (trigger) {
+    preloadProductLead(trigger.dataset.openProduct);
+  }
+}
+
 function closeMobileNavigation() {
   elements.navigation.classList.remove("is-open");
   elements.menuToggle.setAttribute("aria-expanded", "false");
@@ -842,7 +1003,13 @@ function toggleMobileNavigation() {
   );
 }
 
+const desktopPieceLayoutQuery = window.matchMedia("(min-width: 58rem)");
+
 function getSectionAlignmentMode(sectionId) {
+  if (sectionId.startsWith("producto-")) {
+    return "piece";
+  }
+
   return (
     {
       coleccion: "collection",
@@ -878,7 +1045,20 @@ function computeSectionDestination(
   const maximumScroll = getDocumentMaximumScroll();
   let destination = 0;
 
-  if (alignmentMode === "contact") {
+  if (alignmentMode === "piece" && desktopPieceLayoutQuery.matches) {
+    const visual = section.querySelector(".product-visual") ?? section;
+    const stageTarget = visual.querySelector("img") ?? visual;
+    const targetRect = stageTarget.getBoundingClientRect();
+    const targetTop = targetRect.top + window.scrollY;
+    const centeredInset = Math.max(
+      0,
+      (availableHeight - targetRect.height) / 2,
+    );
+    destination = Math.max(
+      targetTop - headerHeight - centeredInset,
+      getPageTop(section) - headerHeight + 1,
+    );
+  } else if (alignmentMode === "contact") {
     const heading = section.querySelector("h2") ?? section;
     destination = getPageTop(heading) - headerHeight - 24;
   } else if (alignmentMode === "how-to-buy") {
@@ -1098,6 +1278,8 @@ function bindEvents() {
       openProduct(openTrigger.dataset.openProduct, openTrigger);
     }
   });
+  document.addEventListener("pointerover", handleProductLeadPreload);
+  document.addEventListener("focusin", handleProductLeadPreload);
   document.addEventListener("click", handleInternalNavigation);
   window.addEventListener("popstate", handleHistoryNavigation);
 
@@ -1206,12 +1388,14 @@ function configureContactLinks() {
 }
 
 function init() {
+  document.documentElement.classList.add("js");
   if ("scrollRestoration" in window.history) {
     window.history.scrollRestoration = "manual";
   }
   renderHero();
   renderCatalogue();
   configureContactLinks();
+  initFaq();
   elements.currentYear.textContent = new Date().getFullYear();
   bindEvents();
 
