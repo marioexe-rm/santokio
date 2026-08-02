@@ -156,14 +156,18 @@ p {
 .skip-link {
   position: fixed;
   z-index: 1000;
-  top: 0.75rem;
+  top: calc(var(--header-height) + 0.75rem);
   left: 0.75rem;
-  padding: 0.75rem 1rem;
-  transform: translateY(-180%);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
   background: var(--chartreuse);
   color: var(--ink);
   text-decoration: none;
-  transition: transform 180ms var(--ease-out);
 }
 
 .visually-hidden {
@@ -179,7 +183,12 @@ p {
 }
 
 .skip-link:focus-visible {
-  transform: translateY(0);
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1rem;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
 }
 
 .site-header {
@@ -221,6 +230,10 @@ p {
   line-height: 1;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.brand-name__tokyo {
+  font-style: italic;
 }
 
 .site-navigation {
@@ -273,7 +286,27 @@ p {
   transform-origin: left;
 }
 
+@keyframes nav-underline-reaffirm {
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0.15;
+  }
+}
+
+.site-navigation a.nav-link--reaffirm::after {
+  transform: scaleX(1);
+  transform-origin: left;
+  animation: nav-underline-reaffirm 600ms var(--ease-out);
+}
+
 .header-access,
+.header-instagram,
 .button {
   display: inline-flex;
   min-height: 2.875rem;
@@ -306,8 +339,16 @@ p {
   stroke-width: 1.5;
 }
 
+.header-access,
+.header-instagram {
+  background: var(--white);
+  color: var(--ink);
+}
+
 .header-access:hover,
-.header-access:active {
+.header-access:active,
+.header-instagram:hover,
+.header-instagram:active {
   background: var(--ink);
   color: var(--chalk);
 }
@@ -317,28 +358,11 @@ p {
 }
 
 .header-instagram {
-  display: grid;
   width: 2.875rem;
-  height: 2.875rem;
-  place-items: center;
-  border: 1px solid var(--ink);
-  background: var(--white);
-  color: var(--ink);
-  text-decoration: none;
-  transition: border-color 180ms ease, transform 180ms var(--ease-out);
+  padding: 0;
 }
 
-.header-instagram:hover {
-  border-color: var(--indigo);
-  transform: translateY(-2px);
-}
-
-.header-instagram:active {
-  transform: translateY(0);
-}
-
-.header-instagram svg,
-.footer-instagram-link svg {
+.header-instagram svg {
   width: 1.35rem;
   height: 1.35rem;
   fill: none;
@@ -354,29 +378,42 @@ p {
   color: var(--white);
 }
 
-.footer-instagram {
-  margin-top: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: var(--rule-inverse);
-}
-
-.footer-instagram-link {
+.footer-contact-link {
   gap: 0.65rem;
   text-decoration: none;
 }
 
-.footer-instagram-link span {
+.footer-contact-link svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: 0 0 auto;
+}
+
+.footer-contact-link .icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.footer-contact-link .icon-fill {
+  fill: currentColor;
+}
+
+.footer-contact-link span {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.35em;
 }
 
-.footer-instagram-link:hover span {
+.footer-contact-link:hover span,
+.footer-contact-link:focus-visible span {
   text-decoration-thickness: 2px;
 }
 
-.footer-instagram p {
-  max-width: 34ch;
+.footer-contact p {
+  margin-top: var(--space-1);
   margin-bottom: 0;
 }
 
@@ -476,6 +513,9 @@ main,
 }
 
 .hero-sequence {
+  --hero-gap: clamp(1rem, 2.25vw, 2.25rem);
+  --hero-stripe: clamp(0.875rem, 1.5vw, 1.5rem);
+  --hero-frame: clamp(1rem, 2.5vw, 2.5rem);
   position: relative;
   isolation: isolate;
   display: grid;
@@ -485,8 +525,19 @@ main,
   grid-template-columns: minmax(0, 3fr) minmax(10rem, 1fr);
   gap: 1px;
   min-height: 0;
-  padding-block: clamp(1rem, 2.5vw, 2.5rem);
+  padding-block: var(--hero-frame);
+  padding-right: calc(var(--hero-gap) + var(--hero-stripe));
   background: var(--ink);
+}
+
+.hero-sequence::after {
+  position: absolute;
+  inset-block: var(--hero-frame);
+  right: var(--hero-stripe);
+  width: var(--hero-gap);
+  background: var(--chalk-bright);
+  content: "";
+  pointer-events: none;
 }
 
 .hero-plane {
@@ -504,8 +555,8 @@ main,
 }
 
 .hero-plane-orchid {
-  right: -5%;
-  width: 45%;
+  right: -8%;
+  width: 48%;
   transform: skewX(-4deg);
   background: var(--orchid);
 }
@@ -519,12 +570,11 @@ main,
 
 .hero-primary {
   z-index: 2;
-  margin-left: clamp(1rem, 3vw, 3rem);
 }
 
 .hero-preview {
   z-index: 1;
-  margin-right: clamp(-3.5rem, -3vw, -1rem);
+  overflow: visible;
 }
 
 .hero-product-link {
@@ -566,6 +616,7 @@ main,
 }
 
 .hero-preview figcaption {
+  width: calc(100% + var(--hero-gap));
   align-items: flex-start;
   flex-direction: column;
 }
@@ -1196,8 +1247,10 @@ main,
 
 .site-footer {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr 1.2fr auto;
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-7);
+  row-gap: var(--space-6);
   padding: var(--space-7) var(--page-gutter)
     max(var(--space-7), env(safe-area-inset-bottom));
   background: var(--ink);
@@ -1217,9 +1270,17 @@ main,
   color: var(--white);
 }
 
+.site-footer .footer-wordmark,
 .copyright {
-  align-self: end;
-  white-space: nowrap;
+  grid-column: 1 / -1;
+}
+
+.footer-info p:last-child {
+  margin-bottom: 0;
+}
+
+.copyright {
+  margin-bottom: 0;
 }
 
 .product-dialog {
@@ -1361,6 +1422,16 @@ main,
 .product-navigation p {
   color: var(--ink-soft);
   font-size: 0.85rem;
+}
+
+.product-navigation button {
+  gap: var(--space-1);
+  padding: 0.65rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.product-nav-compact {
+  display: none;
 }
 
 .gallery-thumbnails {
@@ -1644,6 +1715,8 @@ main,
   }
 
   .hero-sequence {
+    --hero-gap: clamp(0.875rem, 2.5vw, 1.75rem);
+    --hero-stripe: clamp(0.75rem, 1.75vw, 1.25rem);
     grid-column: 1;
     grid-row: 2;
     min-height: 0;
@@ -1705,10 +1778,23 @@ main,
 
   .site-footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-6);
+  }
+
+  .footer-info {
+    grid-column: 1 / -1;
   }
 
   .dialog-shell {
     grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  }
+
+  .product-nav-full {
+    display: none;
+  }
+
+  .product-nav-compact {
+    display: inline;
   }
 }
 
@@ -1746,15 +1832,9 @@ main,
   }
 
   .hero-sequence {
+    --hero-gap: clamp(0.625rem, 2.5vw, 1rem);
+    --hero-stripe: clamp(0.5rem, 2vw, 0.875rem);
     grid-template-columns: minmax(0, 4fr) minmax(6.5rem, 1fr);
-  }
-
-  .hero-primary {
-    margin-left: 0.75rem;
-  }
-
-  .hero-preview {
-    margin-right: -2rem;
   }
 
   .hero-product-link figcaption {
@@ -2039,5 +2119,11 @@ main,
 
   .site-navigation {
     transition: opacity 180ms ease, visibility 180ms ease;
+  }
+
+  .site-navigation a.nav-link--reaffirm::after {
+    height: 2px;
+    transform: scaleX(1);
+    animation: none;
   }
 }

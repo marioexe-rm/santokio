@@ -1,4 +1,4 @@
-# Santokyo
+# SanTokyo
 
 Landing editorial y catálogo estático para una selección pequeña de prendas nuevas importadas desde Japón. El sitio prioriza fotografías reales, datos verificables y consulta directa por WhatsApp; no incluye carrito, checkout, pagos en línea ni backend.
 

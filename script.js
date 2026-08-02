@@ -596,7 +596,7 @@ function renderDialogProduct(product) {
   );
   elements.productNext.setAttribute(
     "aria-label",
-    `Prenda siguiente: ${nextProduct.name}`,
+    `Siguiente prenda: ${nextProduct.name}`,
   );
 }
 
@@ -864,14 +864,13 @@ function getPageTop(element) {
   return element.getBoundingClientRect().top + window.scrollY;
 }
 
-function navigateToSection(
+function computeSectionDestination(
   sectionId,
   alignmentMode = getSectionAlignmentMode(sectionId),
-  { updateHistory = true, behavior } = {},
 ) {
   const section = document.getElementById(sectionId);
   if (!section) {
-    return false;
+    return null;
   }
 
   const headerHeight = elements.header.getBoundingClientRect().height;
@@ -880,7 +879,8 @@ function navigateToSection(
   let destination = 0;
 
   if (alignmentMode === "contact") {
-    destination = maximumScroll;
+    const heading = section.querySelector("h2") ?? section;
+    destination = getPageTop(heading) - headerHeight - 24;
   } else if (alignmentMode === "how-to-buy") {
     const contentStart = section.querySelector(".section-heading") ?? section;
     const contentEnd = section.querySelector(".process-list") ?? section;
@@ -904,7 +904,18 @@ function navigateToSection(
     destination = getPageTop(heading) - headerHeight - 20;
   }
 
-  destination = Math.min(maximumScroll, Math.max(0, destination));
+  return Math.min(maximumScroll, Math.max(0, destination));
+}
+
+function navigateToSection(
+  sectionId,
+  alignmentMode = getSectionAlignmentMode(sectionId),
+  { updateHistory = true, behavior } = {},
+) {
+  const destination = computeSectionDestination(sectionId, alignmentMode);
+  if (destination === null) {
+    return false;
+  }
 
   if (updateHistory) {
     const nextHash = `#${encodeURIComponent(sectionId)}`;
@@ -921,6 +932,33 @@ function navigateToSection(
     behavior: behavior ?? (reducedMotionQuery.matches ? "auto" : "smooth"),
   });
   return true;
+}
+
+const REAFFIRM_CLASS = "nav-link--reaffirm";
+const REAFFIRM_DURATION_MS = 600;
+const REAFFIRM_TOLERANCE_PX = 24;
+const reaffirmTimers = new Map();
+
+function isAtSectionDestination(sectionId, alignmentMode) {
+  const destination = computeSectionDestination(sectionId, alignmentMode);
+  return (
+    destination !== null &&
+    Math.abs(window.scrollY - destination) <= REAFFIRM_TOLERANCE_PX
+  );
+}
+
+function reaffirmNavLink(link) {
+  window.clearTimeout(reaffirmTimers.get(link));
+  link.classList.remove(REAFFIRM_CLASS);
+  void link.offsetWidth;
+  link.classList.add(REAFFIRM_CLASS);
+  reaffirmTimers.set(
+    link,
+    window.setTimeout(() => {
+      link.classList.remove(REAFFIRM_CLASS);
+      reaffirmTimers.delete(link);
+    }, REAFFIRM_DURATION_MS),
+  );
 }
 
 function handleInternalNavigation(event) {
@@ -950,7 +988,17 @@ function handleInternalNavigation(event) {
   }
 
   event.preventDefault();
-  navigateToSection(sectionId, getSectionAlignmentMode(sectionId));
+
+  const alignmentMode = getSectionAlignmentMode(sectionId);
+  if (
+    anchor.closest("[data-navigation]") &&
+    isAtSectionDestination(sectionId, alignmentMode)
+  ) {
+    reaffirmNavLink(anchor);
+    return;
+  }
+
+  navigateToSection(sectionId, alignmentMode);
 }
 
 function handleHistoryNavigation() {
@@ -1149,7 +1197,9 @@ function configureContactLinks() {
 
   elements.instagramLinks.forEach((link) => {
     link.href = SITE_CONFIG.instagramUrl;
-    link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
+    if (!link.querySelector("span")) {
+      link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
+    }
   });
 
   elements.confirmationNote.textContent = SITE_CONFIG.confirmationNote;

@@ -5,15 +5,15 @@ export const VERIFICATION = Object.freeze({
 });
 
 export const SITE_CONFIG = Object.freeze({
-  brand: "Santokyo",
+  brand: "SanTokyo",
   locale: "es-CL",
   currency: "CLP",
   whatsappNumber: "56932926203",
   generalWhatsappMessage:
-    "Hola, quisiera conocer más sobre la colección de Santokyo. ¿Me pueden orientar?",
+    "Hola, quisiera conocer más sobre la colección de SanTokyo. ¿Me pueden orientar?",
   // Pendiente de reemplazo si se confirma una cuenta oficial distinta.
   instagramUrl: "https://www.instagram.com/santokyo/",
-  instagramLabel: "Instagram de Santokyo",
+  instagramLabel: "Instagram de SanTokyo",
   shippingCostClp: 3000,
   delivery:
     "El envío dentro de Santiago tiene un costo fijo de $3.000, pagado previamente y no reembolsable. Al recibir la prenda podrás revisarla, pagar su valor mediante transferencia o efectivo y probártela. Si decides no quedártela, deberás devolverla en ese mismo momento y se reembolsará el valor de la prenda. El costo del envío no se devuelve.",

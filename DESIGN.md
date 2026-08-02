@@ -1,5 +1,5 @@
 ---
-name: Santokyo
+name: SanTokyo
 description: Secuencia editorial de prendas importadas desde Japón, documentada con calma y evidencia.
 colors:
   chalk: "#f4f3ef"
@@ -77,13 +77,13 @@ components:
     padding: "0.5rem 0"
 ---
 
-# Design System: Santokyo
+# Design System: SanTokyo
 
 ## Overview
 
 **Creative North Star: "Índigo cinético"**
 
-Santokyo es una secuencia fotográfica paciente: una colección breve avanza mediante visualizaciones editoriales de gran escala, planos oblicuos y módulos desiguales, sin adquirir la uniformidad de una boutique de tarjetas. La voz es editorial, directa y verificable; el espacio tiza deja examinar cada pieza mientras tinta e índigo organizan el recorrido. Las fotografías reales permanecen disponibles como evidencia dentro de cada ficha.
+SanTokyo es una secuencia fotográfica paciente: una colección breve avanza mediante visualizaciones editoriales de gran escala, planos oblicuos y módulos desiguales, sin adquirir la uniformidad de una boutique de tarjetas. La voz es editorial, directa y verificable; el espacio tiza deja examinar cada pieza mientras tinta e índigo organizan el recorrido. Las fotografías reales permanecen disponibles como evidencia dentro de cada ficha.
 
 La identidad obtiene energía de pocas intervenciones planas —orquídea, una línea chartreuse y geometrías inclinadas—, no de efectos aplicados a la prenda. La fotografía permanece estable, completa y neutral. El sistema sirve primero para entender la selección, distinguir evidencia de visualización y consultar una pieza directamente.
 
@@ -140,7 +140,7 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 - **Body** (400, 1rem, interlínea 1.55): texto corriente con un máximo habitual de 70 caracteres.
 - **Label** (570, 0.78rem, tracking 0.08em): etiquetas funcionales en mayúsculas para búsqueda y orden.
 - **Numeral editorial** (330, fluido, interlínea 0.85): índices de pieza y números de proceso con cifras tabulares.
-- **Wordmark** (620, fluido, tracking 0.2em): nombre Santokyo en mayúsculas.
+- **Wordmark** (620, fluido, tracking 0.2em): nombre SanTokyo en mayúsculas.
 
 ### Named Rules
 
