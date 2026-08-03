@@ -332,7 +332,6 @@ p {
 .header-access svg,
 .button svg,
 .gallery-controls svg,
-.product-navigation svg,
 .dialog-close svg {
   width: 1.25rem;
   height: 1.25rem;
@@ -433,6 +432,20 @@ p {
   border-color: var(--indigo-deep);
   background: var(--indigo-deep);
   transform: translateY(0);
+}
+
+.cta-arrow {
+  flex: 0 0 auto;
+  transition: transform 180ms var(--ease-out);
+}
+
+.button-primary:hover .cta-arrow,
+.button-primary:focus-visible .cta-arrow {
+  transform: translateX(0.2rem);
+}
+
+.button-primary:active .cta-arrow {
+  transform: translateX(0);
 }
 
 .button-secondary {
@@ -963,17 +976,26 @@ main,
 
 .availability {
   display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
+  max-width: 100%;
+  align-items: flex-start;
+  gap: 0.45rem;
+  text-align: left;
+  vertical-align: top;
 }
 
 .availability::before {
+  flex: 0 0 0.65rem;
   width: 0.65rem;
   height: 0.65rem;
+  margin-top: 0.45em;
   border: 1px solid currentColor;
   transform: rotate(45deg);
   background: var(--orchid);
   content: "";
+}
+
+.availability-label {
+  min-width: 0;
 }
 
 .product-actions {
@@ -1118,6 +1140,7 @@ main,
   font-size: clamp(1.05rem, 1.4vw, 1.25rem);
   font-weight: 540;
   list-style: none;
+  -webkit-tap-highlight-color: transparent;
   transition: color 180ms ease;
 }
 
@@ -1161,15 +1184,24 @@ html:not(.js) .faq details[open] summary::after {
     opacity 120ms ease;
 }
 
-.faq summary:hover,
 .faq summary:focus-visible {
   color: var(--indigo);
 }
 
-.faq summary:hover .faq-bullet,
 .faq summary:focus-visible .faq-bullet {
   opacity: 1;
   transform: translateY(-50%) scaleY(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faq summary:hover {
+    color: var(--indigo);
+  }
+
+  .faq summary:hover .faq-bullet {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1);
+  }
 }
 
 .faq details p {
@@ -1180,31 +1212,12 @@ html:not(.js) .faq details[open] summary::after {
 }
 
 .js .faq .faq-answer {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows var(--hero-transition-duration) var(--hero-transition-easing),
-    opacity var(--hero-transition-duration) var(--hero-transition-easing);
-}
-
-.js .faq details.is-open .faq-answer {
-  grid-template-rows: 1fr;
-  opacity: 1;
+  height: 0;
+  overflow: hidden;
 }
 
 .faq-answer-inner {
   min-height: 0;
-  overflow: hidden;
-}
-
-.js .faq .faq-answer p {
-  transform: translateY(-0.4rem);
-  transition: transform var(--hero-transition-duration) var(--hero-transition-easing);
-}
-
-.js .faq details.is-open .faq-answer p {
-  transform: translateY(0);
 }
 
 .contact-band {
@@ -1302,14 +1315,14 @@ html:not(.js) .faq details[open] summary::after {
   display: grid;
   height: 100%;
   grid-template-columns: minmax(0, 1.35fr) minmax(21rem, 0.65fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .dialog-header {
   display: grid;
   min-width: 0;
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: var(--space-4);
@@ -1378,16 +1391,14 @@ html:not(.js) .faq details[open] summary::after {
   transition: none;
 }
 
-.gallery-controls,
-.product-navigation {
+.gallery-controls {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   border-top: var(--rule);
 }
 
-.gallery-controls button,
-.product-navigation button {
+.gallery-controls button {
   display: inline-flex;
   min-height: 3.25rem;
   align-items: center;
@@ -1397,44 +1408,18 @@ html:not(.js) .faq details[open] summary::after {
   background: transparent;
 }
 
-.gallery-controls button:last-child,
-.product-navigation button:last-child {
+.gallery-controls button:last-child {
   justify-self: end;
 }
 
-.gallery-controls button:hover,
-.product-navigation button:hover {
+.gallery-controls button:hover {
   color: var(--indigo);
 }
 
-.gallery-controls p,
-.product-navigation p {
+.gallery-controls p {
   margin: 0;
   font-variant-numeric: tabular-nums;
   text-align: center;
-}
-
-.product-navigation {
-  min-width: 0;
-  grid-column: 2;
-  grid-row: 1;
-  border-bottom: var(--rule);
-  background: var(--chalk);
-}
-
-.product-navigation p {
-  color: var(--ink-soft);
-  font-size: 0.85rem;
-}
-
-.product-navigation button {
-  gap: var(--space-1);
-  padding: 0.65rem 0.5rem;
-  font-size: 0.875rem;
-}
-
-.product-nav-compact {
-  display: none;
 }
 
 .gallery-thumbnails {
@@ -1484,7 +1469,7 @@ html:not(.js) .faq details[open] summary::after {
   min-height: 0;
   flex-direction: column;
   grid-column: 2;
-  grid-row: 3;
+  grid-row: 2;
   padding: var(--space-5) clamp(1.25rem, 3.5vw, 3.5rem) var(--space-6);
   overflow-y: auto;
   background: var(--chalk);
@@ -1793,13 +1778,6 @@ html:not(.js) .faq details[open] summary::after {
     grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
   }
 
-  .product-nav-full {
-    display: none;
-  }
-
-  .product-nav-compact {
-    display: inline;
-  }
 }
 
 @media (max-width: 42rem) {
@@ -1817,7 +1795,7 @@ html:not(.js) .faq details[open] summary::after {
   }
 
   .hero {
-    grid-template-rows: auto minmax(31rem, 68svh);
+    grid-template-rows: auto minmax(27rem, calc(68svh - 5.75rem));
   }
 
   .hero-copy {
@@ -2021,11 +1999,6 @@ html:not(.js) .faq details[open] summary::after {
     clip-path: inset(50%);
   }
 
-  .product-navigation {
-    padding-top: env(safe-area-inset-top);
-    border-top: 0;
-  }
-
   .dialog-product {
     display: block;
     min-height: 0;
@@ -2118,18 +2091,15 @@ html:not(.js) .faq details[open] summary::after {
     animation: none;
   }
 
-  .js .faq .faq-answer,
-  .js .faq .faq-answer p {
+  .faq summary::before,
+  .faq summary::after,
+  .faq-bullet,
+  .cta-arrow {
     transition: none;
-  }
-
-  .js .faq .faq-answer p {
-    transform: none;
   }
 
   .faq-bullet {
     transform: translateY(-50%);
-    transition: opacity 120ms ease;
   }
 
   .gallery-stage img {

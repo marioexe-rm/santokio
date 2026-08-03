@@ -58,9 +58,6 @@ const elements = {
   dialogPrice: document.querySelector("[data-dialog-price]"),
   dialogFacts: document.querySelector("[data-dialog-facts]"),
   dialogWhatsapp: document.querySelector("[data-dialog-whatsapp]"),
-  productPrevious: document.querySelector("[data-product-previous]"),
-  productNext: document.querySelector("[data-product-next]"),
-  productPosition: document.querySelector("[data-product-position]"),
   galleryStage: document.querySelector("[data-gallery-stage]"),
   galleryImage: document.querySelector("[data-gallery-image]"),
   galleryCaption: document.querySelector("[data-gallery-caption]"),
@@ -101,6 +98,18 @@ function formatAvailability(product) {
   }
 
   return product.availability;
+}
+
+function renderAvailability(product, value = formatAvailability(product)) {
+  const isConfirmed = Boolean(
+    product.availabilityConfirmed && product.availability,
+  );
+
+  return `
+    <span class="availability" data-availability-confirmed="${isConfirmed}">
+      <span class="availability-label">${escapeHtml(value)}</span>
+    </span>
+  `;
 }
 
 function formatMaterials(product) {
@@ -421,7 +430,7 @@ function renderProductCard(product) {
             </div>
             <div>
               <dt>Stock</dt>
-              <dd><span class="availability">${escapeHtml(formatAvailability(product))}</span></dd>
+              <dd>${renderAvailability(product)}</dd>
             </div>
           </dl>
           <div class="product-actions">
@@ -438,9 +447,11 @@ function renderProductCard(product) {
               target="_blank"
               rel="noopener noreferrer"
               data-product-whatsapp="${escapeHtml(product.id)}"
-              aria-label="Consultar ${escapeHtml(product.name)}, referencia ${escapeHtml(product.id)}, por WhatsApp"
             >
-              Consultar esta prenda
+              <span>Consultar esta prenda</span>
+              <svg class="cta-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h13M14 7l5 5-5 5"></path>
+              </svg>
             </a>
           </div>
         </div>
@@ -522,7 +533,7 @@ function getProductFacts(product) {
     ],
     ["Etiqueta", product.originalTag],
     ["Condición", product.condition],
-    ["Disponibilidad", formatAvailability(product)],
+    ["Disponibilidad", formatAvailability(product), "availability"],
   ];
 
   if (
@@ -536,10 +547,6 @@ function getProductFacts(product) {
 }
 
 function renderDialogProduct(product) {
-  const productIndex = products.indexOf(product);
-  const previousProduct = products[(productIndex - 1 + products.length) % products.length];
-  const nextProduct = products[(productIndex + 1) % products.length];
-
   elements.dialogName.textContent = product.name;
   elements.dialogClose.setAttribute(
     "aria-label",
@@ -549,24 +556,19 @@ function renderDialogProduct(product) {
   elements.dialogPrice.textContent = formatPrice(product);
   elements.dialogFacts.innerHTML = getProductFacts(product)
     .map(
-      ([label, value]) => `
+      ([label, value, type]) => `
         <div>
           <dt>${escapeHtml(label)}</dt>
-          <dd>${escapeHtml(value)}</dd>
+          <dd>${
+            type === "availability"
+              ? renderAvailability(product, value)
+              : escapeHtml(value)
+          }</dd>
         </div>
       `,
     )
     .join("");
   elements.dialogWhatsapp.href = makeProductWhatsappUrl(product);
-  elements.productPosition.textContent = `${productIndex + 1} de ${products.length}`;
-  elements.productPrevious.setAttribute(
-    "aria-label",
-    `Prenda anterior: ${previousProduct.name}`,
-  );
-  elements.productNext.setAttribute(
-    "aria-label",
-    `Siguiente prenda: ${nextProduct.name}`,
-  );
 }
 
 function imageKindLabel(image) {
@@ -695,20 +697,6 @@ function showGalleryImage(index) {
   const total = getOrderedImages(state.activeProduct).length;
   state.galleryIndex = (index + total) % total;
   renderGallery();
-}
-
-function showAdjacentProduct(offset) {
-  if (!state.activeProduct || products.length === 0) {
-    return;
-  }
-
-  const currentIndex = products.indexOf(state.activeProduct);
-  const nextIndex = (currentIndex + offset + products.length) % products.length;
-  state.activeProduct = products[nextIndex];
-  state.galleryIndex = 0;
-  renderDialogProduct(state.activeProduct);
-  renderGallery();
-  resetDialogScroll();
 }
 
 function lockDocument() {
@@ -843,68 +831,112 @@ function trapDialogFocus(event) {
   }
 }
 
-const faqCollapseTimers = new Map();
-let heroTransitionMs = 760;
+const faqAnimations = new Map();
+let faqTransitionMs = 760;
+let faqTransitionEasing = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-function readHeroTransitionMs() {
-  const raw = getComputedStyle(document.documentElement)
-    .getPropertyValue("--hero-transition-duration")
-    .trim();
+function readFaqMotionSettings() {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const raw = rootStyles.getPropertyValue("--hero-transition-duration").trim();
   const value = Number.parseFloat(raw);
 
-  if (!Number.isFinite(value)) {
-    return 760;
+  if (Number.isFinite(value)) {
+    faqTransitionMs = raw.endsWith("ms") ? value : value * 1000;
   }
 
-  return raw.endsWith("ms") ? value : value * 1000;
+  faqTransitionEasing =
+    rootStyles.getPropertyValue("--hero-transition-easing").trim() ||
+    faqTransitionEasing;
 }
 
 function toggleFaqItem(details, summary) {
-  const willOpen = !details.classList.contains("is-open");
+  const answer = details.querySelector(".faq-answer");
+  if (!answer) {
+    return;
+  }
 
-  window.clearTimeout(faqCollapseTimers.get(details));
-  faqCollapseTimers.delete(details);
+  const willOpen = summary.getAttribute("aria-expanded") !== "true";
+  const currentHeight = answer.getBoundingClientRect().height;
+  const runningAnimation = faqAnimations.get(details);
+
+  if (runningAnimation) {
+    faqAnimations.delete(details);
+    runningAnimation.cancel();
+  }
+
+  details.classList.toggle("is-open", willOpen);
+  summary.setAttribute("aria-expanded", String(willOpen));
 
   if (willOpen) {
     details.open = true;
-    void details.offsetHeight;
-    details.classList.add("is-open");
-    summary.setAttribute("aria-expanded", "true");
-    return;
+    answer.inert = false;
+  } else {
+    answer.inert = true;
   }
 
-  details.classList.remove("is-open");
-  summary.setAttribute("aria-expanded", "false");
-
-  const finalizeCollapse = () => {
-    faqCollapseTimers.delete(details);
-    if (!details.classList.contains("is-open")) {
+  if (reducedMotionQuery.matches || typeof answer.animate !== "function") {
+    answer.style.height = willOpen ? "auto" : "0px";
+    if (!willOpen) {
       details.open = false;
     }
-  };
-
-  if (reducedMotionQuery.matches) {
-    finalizeCollapse();
     return;
   }
 
-  faqCollapseTimers.set(
-    details,
-    window.setTimeout(finalizeCollapse, heroTransitionMs + 60),
+  const expandedHeight =
+    answer.firstElementChild?.getBoundingClientRect().height ??
+    answer.scrollHeight;
+  const targetHeight = willOpen ? expandedHeight : 0;
+  answer.style.height = `${currentHeight}px`;
+
+  const animation = answer.animate(
+    [
+      { height: `${currentHeight}px` },
+      { height: `${targetHeight}px` },
+    ],
+    {
+      duration: faqTransitionMs,
+      easing: faqTransitionEasing,
+      fill: "both",
+    },
   );
+
+  faqAnimations.set(details, animation);
+  animation.finished.then(
+    () => {
+      if (faqAnimations.get(details) !== animation) {
+        return;
+      }
+
+      faqAnimations.delete(details);
+      answer.style.height = willOpen ? "auto" : "0px";
+      if (!willOpen) {
+        details.open = false;
+      }
+      animation.cancel();
+    },
+    () => {},
+  );
+  animation.oncancel = () => {
+    if (faqAnimations.get(details) === animation) {
+      faqAnimations.delete(details);
+    }
+  };
 }
 
 function initFaq() {
-  heroTransitionMs = readHeroTransitionMs();
+  readFaqMotionSettings();
 
   document.querySelectorAll(".faq details").forEach((details) => {
     const summary = details.querySelector("summary");
-    if (!summary) {
+    const answer = details.querySelector(".faq-answer");
+    if (!summary || !answer) {
       return;
     }
 
     details.classList.toggle("is-open", details.open);
     summary.setAttribute("aria-expanded", String(details.open));
+    answer.style.height = details.open ? "auto" : "0px";
+    answer.inert = !details.open;
     summary.addEventListener("click", (event) => {
       event.preventDefault();
       toggleFaqItem(details, summary);
@@ -1235,10 +1267,6 @@ function bindEvents() {
   window.addEventListener("popstate", handleHistoryNavigation);
 
   elements.dialogClose.addEventListener("click", closeProduct);
-  elements.productPrevious.addEventListener("click", () =>
-    showAdjacentProduct(-1),
-  );
-  elements.productNext.addEventListener("click", () => showAdjacentProduct(1));
   elements.galleryPrevious.addEventListener("click", () =>
     showGalleryImage(state.galleryIndex - 1),
   );
