@@ -1,4 +1,4 @@
-import { products, SITE_CONFIG, VERIFICATION } from "./data/products.js";
+import { products, SITE_CONFIG, VERIFICATION } from "./data/products.js?v=3";
 
 const moneyFormatter = new Intl.NumberFormat(SITE_CONFIG.locale, {
   style: "currency",
@@ -50,6 +50,7 @@ const elements = {
   emptyState: document.querySelector("[data-empty-state]"),
   generalWhatsappLinks: document.querySelectorAll("[data-general-whatsapp]"),
   instagramLinks: document.querySelectorAll("[data-instagram]"),
+  instagramHandles: document.querySelectorAll("[data-instagram-handle]"),
   currentYear: document.querySelector("[data-current-year]"),
   dialog: document.querySelector("[data-product-dialog]"),
   dialogClose: document.querySelector("[data-dialog-close]"),
@@ -93,20 +94,15 @@ function formatPrice(product) {
 }
 
 function formatAvailability(product) {
-  if (!product.availabilityConfirmed || !product.availability) {
-    return "Disponibilidad por confirmar";
-  }
-
-  return product.availability;
+  return product.availability === null || product.availability === undefined
+    ? ""
+    : String(product.availability);
 }
 
 function renderAvailability(product, value = formatAvailability(product)) {
-  const isConfirmed = Boolean(
-    product.availabilityConfirmed && product.availability,
-  );
-
   return `
-    <span class="availability" data-availability-confirmed="${isConfirmed}">
+    <span class="availability" data-availability="${escapeHtml(value)}">
+      <span class="availability-indicator" aria-hidden="true"></span>
       <span class="availability-label">${escapeHtml(value)}</span>
     </span>
   `;
@@ -548,6 +544,7 @@ function getProductFacts(product) {
 
 function renderDialogProduct(product) {
   elements.dialogName.textContent = product.name;
+  elements.dialogName.style.removeProperty("--dialog-title-size");
   elements.dialogClose.setAttribute(
     "aria-label",
     `Cerrar detalle de ${product.name}`,
@@ -557,9 +554,11 @@ function renderDialogProduct(product) {
   elements.dialogFacts.innerHTML = getProductFacts(product)
     .map(
       ([label, value, type]) => `
-        <div>
-          <dt>${escapeHtml(label)}</dt>
-          <dd>${
+        <div class="product-fact">
+          <dt class="product-fact__label">${escapeHtml(label)}</dt>
+          <dd class="product-fact__value${
+            type === "availability" ? " product-fact__value--availability" : ""
+          }">${
             type === "availability"
               ? renderAvailability(product, value)
               : escapeHtml(value)
@@ -569,6 +568,10 @@ function renderDialogProduct(product) {
     )
     .join("");
   elements.dialogWhatsapp.href = makeProductWhatsappUrl(product);
+
+  if (elements.dialog.open) {
+    fitDialogTitle();
+  }
 }
 
 function imageKindLabel(image) {
@@ -759,12 +762,101 @@ function resetDialogScroll() {
   elements.dialogProduct.scrollTop = 0;
 }
 
+const DIALOG_TITLE_MAX_LINES = 2;
+const DIALOG_TITLE_STEP_PX = 0.5;
+const DIALOG_TITLE_MAX_STEPS = 128;
+let dialogTitleFitFrame = 0;
+
+function countDialogTitleLines() {
+  const range = document.createRange();
+  range.selectNodeContents(elements.dialogName);
+  const lineTops = [];
+
+  Array.from(range.getClientRects()).forEach((rect) => {
+    if (
+      rect.width > 0 &&
+      !lineTops.some((top) => Math.abs(top - rect.top) < 1)
+    ) {
+      lineTops.push(rect.top);
+    }
+  });
+
+  range.detach();
+  return Math.max(1, lineTops.length);
+}
+
+function fitDialogTitle() {
+  const title = elements.dialogName;
+  elements.dialog.classList.toggle(
+    "has-expanded-title",
+    title.textContent.trim().length > 48 &&
+      window.matchMedia("(min-width: 42.01rem)").matches,
+  );
+
+  if (!elements.dialog.open || title.clientWidth === 0) {
+    return;
+  }
+
+  title.style.removeProperty("--dialog-title-size");
+  const maximumStyles = getComputedStyle(title);
+  const maximumSize = Number.parseFloat(maximumStyles.fontSize);
+  const maximumLineHeight = Number.parseFloat(maximumStyles.lineHeight);
+  const allowedTitleHeight = Math.max(
+    elements.dialogClose.getBoundingClientRect().height,
+    maximumLineHeight,
+  );
+  title.style.setProperty(
+    "--dialog-title-size",
+    "var(--dialog-title-min-size)",
+  );
+  const minimumSize = Number.parseFloat(getComputedStyle(title).fontSize);
+  let selectedSize = maximumSize;
+  let lineCount = 1;
+
+  for (let step = 0; step <= DIALOG_TITLE_MAX_STEPS; step += 1) {
+    selectedSize = Math.max(
+      minimumSize,
+      maximumSize - step * DIALOG_TITLE_STEP_PX,
+    );
+    title.style.setProperty("--dialog-title-size", `${selectedSize}px`);
+    lineCount = countDialogTitleLines();
+    const titleHeight = title.getBoundingClientRect().height;
+
+    if (
+      (lineCount <= DIALOG_TITLE_MAX_LINES &&
+        titleHeight <= allowedTitleHeight + 0.5) ||
+      selectedSize === minimumSize
+    ) {
+      break;
+    }
+  }
+
+  title.dataset.titleLines = String(lineCount);
+  title.dataset.titleFontSize = selectedSize.toFixed(1);
+  title.dataset.titleBlockHeight = title
+    .getBoundingClientRect()
+    .height.toFixed(1);
+}
+
+function scheduleDialogTitleFit() {
+  if (!elements.dialog.open) {
+    return;
+  }
+
+  window.cancelAnimationFrame(dialogTitleFitFrame);
+  dialogTitleFitFrame = window.requestAnimationFrame(() => {
+    dialogTitleFitFrame = 0;
+    fitDialogTitle();
+  });
+}
+
 function openProduct(productId, trigger) {
   const product = products.find((candidate) => candidate.id === productId);
   if (!product || elements.dialog.open) {
     return;
   }
 
+  elements.dialog.classList.add("is-sizing-title");
   state.activeProduct = product;
   state.galleryIndex = 0;
   state.lastFocused = trigger ?? document.activeElement;
@@ -772,6 +864,8 @@ function openProduct(productId, trigger) {
   renderGallery();
   lockDocument();
   elements.dialog.showModal();
+  fitDialogTitle();
+  elements.dialog.classList.remove("is-sizing-title");
   resetDialogScroll();
   elements.dialogClose.focus({ preventScroll: true });
 }
@@ -1128,7 +1222,6 @@ function handleInternalNavigation(event) {
   const anchor = event.target.closest('a[href^="#"]');
   if (
     !anchor ||
-    anchor.classList.contains("skip-link") ||
     anchor.hasAttribute("data-open-product")
   ) {
     return;
@@ -1209,6 +1302,7 @@ function bindEvents() {
     if (window.innerWidth > 928) {
       closeMobileNavigation();
     }
+    scheduleDialogTitleFit();
   });
 
   document.addEventListener("visibilitychange", scheduleHeroRotation);
@@ -1358,9 +1452,11 @@ function configureContactLinks() {
 
   elements.instagramLinks.forEach((link) => {
     link.href = SITE_CONFIG.instagramUrl;
-    if (!link.querySelector("span")) {
-      link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
-    }
+    link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
+  });
+
+  elements.instagramHandles.forEach((handle) => {
+    handle.textContent = `@${SITE_CONFIG.instagramHandle}`;
   });
 
   elements.confirmationNote.textContent = SITE_CONFIG.confirmationNote;
@@ -1377,6 +1473,8 @@ function init() {
   initFaq();
   elements.currentYear.textContent = new Date().getFullYear();
   bindEvents();
+
+  document.fonts?.ready.then(scheduleDialogTitleFit);
 
   if (window.location.hash) {
     requestAnimationFrame(handleHistoryNavigation);

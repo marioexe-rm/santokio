@@ -156,23 +156,6 @@ p {
   box-shadow: 0 0 0 6px var(--chartreuse);
 }
 
-.skip-link {
-  position: fixed;
-  z-index: 1000;
-  top: calc(var(--header-height) + 0.75rem);
-  left: 0.75rem;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  background: var(--chartreuse);
-  color: var(--ink);
-  text-decoration: none;
-}
-
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;
@@ -183,15 +166,6 @@ p {
   clip: rect(0 0 0 0) !important;
   white-space: nowrap !important;
   clip-path: inset(50%) !important;
-}
-
-.skip-link:focus-visible {
-  width: auto;
-  height: auto;
-  padding: 0.75rem 1rem;
-  overflow: visible;
-  clip-path: none;
-  white-space: normal;
 }
 
 .site-header {
@@ -975,27 +949,32 @@ main,
 }
 
 .availability {
+  width: fit-content;
   display: inline-flex;
   max-width: 100%;
-  align-items: flex-start;
+  align-items: baseline;
+  justify-content: flex-end;
   gap: 0.45rem;
-  text-align: left;
-  vertical-align: top;
+  vertical-align: baseline;
 }
 
-.availability::before {
+.availability-indicator {
   flex: 0 0 0.65rem;
   width: 0.65rem;
   height: 0.65rem;
-  margin-top: 0.45em;
   border: 1px solid currentColor;
   transform: rotate(45deg);
   background: var(--orchid);
-  content: "";
 }
 
 .availability-label {
   min-width: 0;
+}
+
+.product-fact__value--availability {
+  width: fit-content;
+  justify-self: end;
+  text-align: end;
 }
 
 .product-actions {
@@ -1318,8 +1297,13 @@ html:not(.js) .faq details[open] summary::after {
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+.product-dialog.has-expanded-title .dialog-shell {
+  grid-template-columns: minmax(0, 1fr) min(40rem, 67%);
+}
+
 .dialog-header {
   display: grid;
+  min-block-size: clamp(6.2rem, 8.31vw, 7.5rem);
   min-width: 0;
   grid-column: 2;
   grid-row: 1;
@@ -1330,11 +1314,24 @@ html:not(.js) .faq details[open] summary::after {
   background: var(--chalk);
 }
 
-.dialog-header h2 {
+.dialog-title {
+  --dialog-title-max-size: clamp(2.4rem, 4vw, 4.6rem);
+  --dialog-title-min-size: 1.5rem;
   min-width: 0;
+  max-width: 100%;
   margin: 0;
-  overflow-wrap: anywhere;
-  font-size: clamp(2.4rem, 4vw, 4.6rem);
+  overflow-wrap: break-word;
+  font-size: var(--dialog-title-size, var(--dialog-title-max-size));
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.product-dialog.is-sizing-title .dialog-header {
+  visibility: hidden;
+}
+
+.product-dialog.has-expanded-title .dialog-title {
+  --dialog-title-min-size: 1.25rem;
 }
 
 .dialog-close {
@@ -1955,17 +1952,25 @@ html:not(.js) .faq details[open] summary::after {
   }
 
   .dialog-header {
+    min-block-size: 6.25rem;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--space-4);
+    gap: 0.5rem;
     padding-top: var(--space-4);
-    padding-right: max(var(--page-gutter), env(safe-area-inset-right));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
     padding-bottom: var(--space-4);
-    padding-left: max(var(--page-gutter), env(safe-area-inset-left));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
     border-bottom: var(--rule);
   }
 
-  .dialog-header h2 {
-    font-size: clamp(2.35rem, 11vw, 3.5rem);
+  .dialog-title {
+    --dialog-title-max-size: clamp(2.35rem, 11vw, 3.5rem);
+    --dialog-title-min-size: 1.1875rem;
+  }
+
+  .dialog-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-basis: 2.75rem;
   }
 
   .dialog-gallery {

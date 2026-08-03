@@ -16,17 +16,17 @@
       property="og:description"
       content="Una colección pequeña para mirar con tiempo, con fotografías reales y consulta directa."
     >
-    <meta property="og:url" content="https://marioexe-rm.github.io/santokio/">
+    <meta property="og:url" content="https://santokyo.com/">
     <meta
       property="og:image"
-      content="https://marioexe-rm.github.io/santokio/assets/catalogo/1/frontal_1.jpeg"
+      content="https://santokyo.com/assets/catalogo/1/frontal_1.jpeg"
     >
     <meta
       property="og:image:alt"
       content="Falda con paneles oscuros y motivos gráficos fotografiada sobre una superficie de madera."
     >
-    <link rel="canonical" href="https://marioexe-rm.github.io/santokio/">
-    <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="canonical" href="https://santokyo.com/">
+    <link rel="icon" href="assets/favicon.svg?v=3" type="image/svg+xml">
     <link
       rel="preload"
       href="assets/fonts/funnel-sans-latin.woff2"
@@ -40,8 +40,19 @@
       as="image"
       fetchpriority="high"
     >
-    <link rel="stylesheet" href="styles.css?v=2">
-    <script type="module" src="script.js?v=2"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://santokyo.com/#organization",
+        "name": "SanTokyo",
+        "url": "https://santokyo.com/",
+        "image": "https://santokyo.com/assets/catalogo/1/frontal_1.jpeg",
+        "sameAs": ["https://www.instagram.com/santokyo_jp/"]
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css?v=3">
+    <script type="module" src="script.js?v=3"></script>
   </head>
   <body>
     <!--
@@ -52,8 +63,6 @@
       FORM: Secuencia panorámica, composición 03 aprobada dentro de Índigo cinético; seed b77613e9 y elección explícita del usuario.
       FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
     -->
-    <a class="skip-link" href="#contenido">Saltar al contenido</a>
-
     <header class="site-header" data-header>
       <a class="wordmark" href="#inicio" aria-label="SanTokyo, volver al inicio">
         <span class="brand-name" aria-hidden="true"><span class="brand-name__san">San</span><span class="brand-name__tokyo">Tokyo</span></span>
@@ -73,7 +82,7 @@
           href="#"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Instagram"
+          aria-label="Instagram de SanTokyo"
           data-instagram
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -103,7 +112,7 @@
       </div>
     </header>
 
-    <main id="contenido">
+    <main>
       <section class="hero" id="inicio" aria-labelledby="hero-title">
         <div class="hero-copy">
           <h1 id="hero-title">Una selección para mirar de cerca.</h1>
@@ -198,7 +207,7 @@
           </div>
           <div>
             <dt>Confirmación directa</dt>
-            <dd>Stock, medidas, entrega y condiciones se revisan antes del pago.</dd>
+            <dd>Cada prenda publicada corresponde a una unidad; medidas, entrega y condiciones se revisan antes del pago.</dd>
           </div>
         </dl>
       </section>
@@ -218,7 +227,7 @@
           </li>
           <li>
             <span>02</span>
-            <p>Consulta disponibilidad, medidas y coordinación por WhatsApp.</p>
+            <p>Consulta medidas y coordinación por WhatsApp.</p>
           </li>
           <li>
             <span>03</span>
@@ -246,7 +255,7 @@
           <p>
             Si decides no quedártela, deberás devolverla en ese mismo momento y se
             reembolsará el valor de la prenda. El costo del envío no se devuelve.
-            Stock, talla, medidas y entrega se confirman previamente.
+            Cada prenda publicada corresponde a una unidad. Talla, medidas y entrega se confirman previamente.
           </p>
         </div>
       </section>
@@ -346,8 +355,8 @@
             <div class="faq-answer">
               <div class="faq-answer-inner">
                 <p>
-                  No de forma automática. La disponibilidad y cualquier condición de
-                  reserva se confirman directamente antes de coordinar la entrega.
+                  No de forma automática. Mientras la prenda permanezca publicada existe
+                  una unidad, pero cualquier condición de reserva se confirma directamente.
                 </p>
               </div>
             </div>
@@ -479,7 +488,7 @@
             </svg>
             <span>Contacto por WhatsApp</span>
           </a>
-          <p>Stock, medidas, envío y condiciones sujetos a confirmación previa.</p>
+          <p>Cada pieza publicada corresponde a una unidad; medidas, envío y condiciones se confirman previamente.</p>
         </div>
         <div class="footer-contact">
           <a
@@ -494,7 +503,7 @@
               <circle cx="12" cy="12" r="4"></circle>
               <path d="M17.5 6.5h.01"></path>
             </svg>
-            <span>Síguenos en Instagram</span>
+            <span data-instagram-handle>@santokyo_jp</span>
           </a>
           <p>Nuevas piezas, detalles y actualizaciones de la colección.</p>
         </div>
@@ -512,7 +521,7 @@
     >
       <div class="dialog-shell">
         <header class="dialog-header">
-          <h2 id="dialog-product-name" data-dialog-name></h2>
+          <h2 class="dialog-title" id="dialog-product-name" data-dialog-name></h2>
           <button
             class="dialog-close"
             type="button"
@@ -562,7 +571,7 @@
             El color puede variar según la iluminación y la configuración de la pantalla.
           </p>
           <p class="confirmation-note" data-confirmation-note>
-            Stock, talla, medidas y entrega se confirman previamente. El envío dentro
+            Cada prenda publicada corresponde a una unidad. Talla, medidas y entrega se confirman previamente. El envío dentro
             de Santiago cuesta $3.000, se paga antes y no es reembolsable. La prenda
             se paga al recibirla mediante transferencia o efectivo; puedes probártela
             y, si no te la quedas, debes devolverla inmediatamente durante esa misma

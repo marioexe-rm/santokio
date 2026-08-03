@@ -32,7 +32,7 @@ The commercial experience is calm and editorial, without artificial discounts, f
 
 Customers browse the catalogue in Spanish for Chile, review product imagery and details, and contact SanTokyo through WhatsApp at `56932926203`. The prefilled WhatsApp message must identify the product by name or identifier.
 
-Availability, size, measurements, and delivery are confirmed manually. Delivery within Santiago costs `$3.000 CLP`; this cost is paid in advance and is not refundable. At delivery, the customer may inspect the garment, pay its value by bank transfer or cash, and try it on. They must decide during that same delivery whether to keep it. If they do not keep it, they return it immediately and receive a refund of the garment value only; there is no later return period and the delivery cost is not refunded.
+Every published garment represents one available unit and must be removed from the catalogue immediately when sold. Size, measurements, and delivery are confirmed manually. Delivery within Santiago costs `$3.000 CLP`; this cost is paid in advance and is not refundable. At delivery, the customer may inspect the garment, pay its value by bank transfer or cash, and try it on. They must decide during that same delivery whether to keep it. If they do not keep it, they return it immediately and receive a refund of the garment value only; there is no later return period and the delivery cost is not refunded.
 
 Prices are presented in Chilean pesos using CLP formatting.
 
@@ -41,7 +41,7 @@ Prices are presented in Chilean pesos using CLP formatting.
 - The catalogue currently has one product per direct subfolder of `ropa/` and is expected to grow to approximately 20–30 products.
 - Product content must be centralized in a maintainable data file rather than duplicated across HTML.
 - The site has no checkout, shopping cart, online payment flow, backend, or automatic inventory system.
-- Product-specific facts—including size, measurements, materials, price, colour, construction, and availability—must come from real garment photographs, labels, or manually verified data. They must not be inferred from AI-generated visualizations.
+- Product-specific facts—including size, measurements, materials, price, colour, and construction—must come from real garment photographs, labels, or manually verified data. Availability follows the publication rule: one unit while listed, then immediate removal when sold. None of these facts may be inferred from AI-generated visualizations.
 - Only local assets under `ropa/` may be used for garment imagery. The original files must not be modified, renamed, converted, overwritten, or deleted.
 - The implementation must make AI-generated visualizations easy to replace or remove later.
 - The catalogue uses Chilean Spanish with `lang="es-CL"`.

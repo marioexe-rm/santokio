@@ -9,6 +9,9 @@ index.html                 estructura semántica, secciones y diálogo
 styles.css                 sistema visual, responsive y estados
 script.js                  render, carruseles, anclas, galería, foco y enlaces externos
 data/products.js           configuración comercial y catálogo centralizado
+CNAME                      dominio personalizado de GitHub Pages
+sitemap.xml                URL pública indexable
+robots.txt                 acceso de rastreo y ubicación del sitemap
 assets/fonts/              Funnel Sans autoalojada y licencia OFL
 assets/catalogo/           copias públicas sin metadatos privados
 ropa/                      activos fuente locales del inventario, no versionados
@@ -42,7 +45,7 @@ Edita `SITE_CONFIG` en `data/products.js`:
 
 - `whatsappNumber`: número internacional sin `+`, espacios ni guiones;
 - `generalWhatsappMessage`: mensaje del contacto general;
-- `instagramUrl` y `instagramLabel`: destino y nombre accesible compartidos por navbar y footer;
+- `instagramHandle`, `instagramUrl` y `instagramLabel`: usuario, destino y nombre accesible compartidos por navbar y footer; la cuenta vigente es `@santokyo_jp` (`https://www.instagram.com/santokyo_jp/`);
 - `shippingCostClp`: costo fijo vigente del envío;
 - `delivery`: modalidad vigente;
 - `confirmationNote`: resumen que aparece en cada ficha.
@@ -83,7 +86,7 @@ No uses una visualización generada con IA para deducir talla, composición, med
 5. Ordena primero las tres visualizaciones IA y después las dos fotografías reales disponibles, sin duplicar archivos.
 6. Clasifica cada activo con `kind: "real-product-photo"` o `kind: "ai-model-visualization"`.
 7. Completa un `alt` descriptivo y conciso; para IA, agrega además el aviso referencial centralizado en `disclosure`. Las tarjetas usan solo las imágenes IA y las fotografías reales permanecen en el detalle.
-8. Completa `availability`, `availabilityConfirmed` y cada estado de `fieldVerification` con evidencia real.
+8. Mantén `availability: 1` mientras la prenda esté publicada; retírala del arreglo en cuanto se venda.
 9. Levanta el servidor, abre la tarjeta y recorre toda la galería para revisar rutas, orden, avisos y WhatsApp.
 
 La composición admite veinte a treinta productos. La búsqueda funciona con nombre e identificador. Los filtros por talla, material u otros campos no se muestran mientras los datos sean insuficientes; el orden por precio debe añadirse solo cuando existan al menos dos precios numéricos verificados.
@@ -93,8 +96,8 @@ La composición admite veinte a treinta productos. La búsqueda funciona con nom
 - `priceClp`: número entero en pesos chilenos o `null`; el sitio lo formatea como CLP.
 - `originalPriceYen`: número o `null`; solo se muestra con verificación explícita.
 - No conviertas automáticamente yenes a pesos.
-- `availabilityConfirmed: true` permite publicar el texto de `availability`.
-- Para afirmar “una unidad disponible”, escribe esa frase solo después de confirmarla.
+- `availability` es la única fuente del stock visible y vale `1` para toda prenda publicada.
+- Una prenda vendida se retira inmediatamente del arreglo; no se conserva publicada con otro estado.
 - Talla, medidas, materiales y país de fabricación siguen la misma regla: valor comprobado más estado `verified`.
 
 ## Revisar rutas y contenido
@@ -124,11 +127,13 @@ La revisión visual debe cubrir, como mínimo, `360 × 800`, `390 × 844`, `430 
 Cada push a `main` ejecuta `.github/workflows/pages.yml` y publica la raíz mediante GitHub Pages, sin build:
 
 ```text
-https://marioexe-rm.github.io/santokio/
+https://santokyo.com/
 ```
 
-El workflow habilita Pages cuando todavía no existe. También puedes publicar la
-raíz en Cloudflare Pages, Netlify, Vercel u otro host estático.
+`CNAME` mantiene el dominio personalizado en la publicación y `robots.txt`
+declara `https://santokyo.com/sitemap.xml`. El workflow habilita Pages cuando
+todavía no existe. También puedes publicar la raíz en Cloudflare Pages, Netlify,
+Vercel u otro host estático.
 
 Antes de publicar:
 
@@ -136,13 +141,13 @@ Antes de publicar:
 2. usa siempre una fotografía real saneada como `og:image`;
 3. revisa caché y peso de las copias públicas sin modificar los originales.
 
-El prototipo omite datos estructurados `Product`: precio, stock y otros campos
+El prototipo omite datos estructurados `Product`: precio y otros campos
 comerciales todavía no permiten representar cada prenda con suficiente precisión.
 Agrégalos solo cuando esos datos estén verificados.
 
 ## Limitaciones actuales
 
-- El stock no está sincronizado y debe confirmarse manualmente.
+- No hay inventario automático: la presencia de una prenda en el catálogo equivale a una unidad y exige retirarla inmediatamente cuando se venda.
 - La consulta no constituye una reserva automática.
 - No hay cuenta, carrito, checkout, pago en línea ni seguimiento de entrega.
 - No existe un panel para editar productos; los cambios se hacen en el archivo de datos.

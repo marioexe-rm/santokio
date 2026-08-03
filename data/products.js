@@ -11,17 +11,17 @@ export const SITE_CONFIG = Object.freeze({
   whatsappNumber: "56932926203",
   generalWhatsappMessage:
     "Hola, quisiera conocer más sobre la colección de SanTokyo. ¿Me pueden orientar?",
-  // Pendiente de reemplazo si se confirma una cuenta oficial distinta.
-  instagramUrl: "https://www.instagram.com/santokyo/",
+  instagramHandle: "santokyo_jp",
+  instagramUrl: "https://www.instagram.com/santokyo_jp/",
   instagramLabel: "Instagram de SanTokyo",
   shippingCostClp: 3000,
   delivery:
     "El envío dentro de Santiago tiene un costo fijo de $3.000, pagado previamente y no reembolsable. Al recibir la prenda podrás revisarla, pagar su valor mediante transferencia o efectivo y probártela. Si decides no quedártela, deberás devolverla en ese mismo momento y se reembolsará el valor de la prenda. El costo del envío no se devuelve.",
   confirmationNote:
-    "Stock, talla, medidas y entrega se confirman previamente. El envío dentro de Santiago cuesta $3.000, se paga antes y no es reembolsable. La prenda se paga al recibirla mediante transferencia o efectivo; puedes probártela y, si no te la quedas, debes devolverla inmediatamente durante la misma entrega para recibir el reembolso del valor de la prenda.",
-  publicSiteUrl: "https://marioexe-rm.github.io/santokio/",
+    "Cada prenda publicada corresponde a una unidad. Talla, medidas y entrega se confirman previamente. El envío dentro de Santiago cuesta $3.000, se paga antes y no es reembolsable. La prenda se paga al recibirla mediante transferencia o efectivo; puedes probártela y, si no te la quedas, debes devolverla inmediatamente durante la misma entrega para recibir el reembolso del valor de la prenda.",
+  publicSiteUrl: "https://santokyo.com/",
   socialImageUrl:
-    "https://marioexe-rm.github.io/santokio/assets/catalogo/1/frontal_1.jpeg",
+    "https://santokyo.com/assets/catalogo/1/frontal_1.jpeg",
 });
 
 const AI_DISCLOSURE =
@@ -48,8 +48,7 @@ export const products = [
     originalPriceYen: null,
     priceClp: null,
     condition: "Nueva, con etiqueta original",
-    availability: null,
-    availabilityConfirmed: false,
+    availability: 1,
     featured: true,
     fieldVerification: {
       name: VERIFICATION.NOT_APPLICABLE,
@@ -64,7 +63,6 @@ export const products = [
       originalPriceYen: VERIFICATION.UNVERIFIED,
       priceClp: VERIFICATION.UNVERIFIED,
       condition: VERIFICATION.VERIFIED,
-      availability: VERIFICATION.UNVERIFIED,
     },
     images: [
       {
@@ -108,8 +106,7 @@ export const products = [
         disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
-    editableNotes:
-      "Completar talla, medidas, composición, precio y disponibilidad solo con datos verificados.",
+    editableNotes: "Completar talla, medidas, composición y precio solo con datos verificados.",
   },
   {
     id: "STK-002",
@@ -131,8 +128,7 @@ export const products = [
     originalPriceYen: null,
     priceClp: null,
     condition: "Nueva, con etiqueta original",
-    availability: null,
-    availabilityConfirmed: false,
+    availability: 1,
     featured: false,
     fieldVerification: {
       name: VERIFICATION.NOT_APPLICABLE,
@@ -147,7 +143,6 @@ export const products = [
       originalPriceYen: VERIFICATION.UNVERIFIED,
       priceClp: VERIFICATION.UNVERIFIED,
       condition: VERIFICATION.VERIFIED,
-      availability: VERIFICATION.UNVERIFIED,
     },
     images: [
       {
@@ -191,8 +186,7 @@ export const products = [
         disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
-    editableNotes:
-      "Completar talla, medidas, composición, precio y disponibilidad solo con datos verificados.",
+    editableNotes: "Completar talla, medidas, composición y precio solo con datos verificados.",
   },
   {
     id: "STK-003",
@@ -214,8 +208,7 @@ export const products = [
     originalPriceYen: null,
     priceClp: null,
     condition: "Nueva, con etiqueta original",
-    availability: null,
-    availabilityConfirmed: false,
+    availability: 1,
     featured: false,
     fieldVerification: {
       name: VERIFICATION.NOT_APPLICABLE,
@@ -230,7 +223,6 @@ export const products = [
       originalPriceYen: VERIFICATION.UNVERIFIED,
       priceClp: VERIFICATION.UNVERIFIED,
       condition: VERIFICATION.VERIFIED,
-      availability: VERIFICATION.UNVERIFIED,
     },
     images: [
       {
@@ -274,7 +266,6 @@ export const products = [
         disclosure: "Fotografía real de la prenda disponible.",
       },
     ],
-    editableNotes:
-      "Completar talla, medidas, composición, precio y disponibilidad solo con datos verificados.",
+    editableNotes: "Completar talla, medidas, composición y precio solo con datos verificados.",
   },
 ];
