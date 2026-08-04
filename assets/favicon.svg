@@ -1,31 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <rect x="2" y="2" width="28" height="28" rx="5" fill="#ffffff"/>
-  <g id="monogram" transform="translate(0 .5)">
+  <rect x="1" y="1" width="30" height="30" rx="5.5" fill="#ffffff"/>
+  <g id="monogram" transform="translate(-1 .5)">
     <path
       id="monogram-s"
-      d="M21.4 9.2C19.3 7.5 16 7 13.2 7.85c-2.55.78-4 2.45-3.65 4.2.38 1.95 2.55 2.75 6.15 3.35 3.55.6 5.6 1.65 5.9 3.75.35 2.35-1.95 4.15-4.65 4.65-3.05.6-6-.15-8.2-1.85"
+      d="M22.4689218 10.3164127C20.5914743 7.7430734 16.5400083 6.8360689 13.2 7.85c-2.55.78-4 2.45-3.65 4.2.38 1.95 2.55 2.75 6.15 3.35 3.55.6 5.6 1.65 5.9 3.75.35 2.35-1.95 4.15-4.65 4.65C13.333457 24.5114511 9.8575148 23.3247923 7.6058374 20.9068938"
+      transform="translate(0 3)"
       fill="none"
       stroke="#000000"
       stroke-width="3.1"
-      stroke-linecap="round"
+      stroke-linecap="butt"
       stroke-linejoin="round"
     />
-    <path
-      d="M8.2 7h16M19.3 7l-3.68 13.21"
-      fill="none"
-      stroke="#ffffff"
-      stroke-width="4.2"
-      stroke-linecap="square"
-      stroke-linejoin="miter"
-    />
-    <path
+    <g
       id="monogram-t"
-      d="M8.2 7h16M19.3 7l-3.68 13.21"
+      transform="translate(1 0)"
       fill="none"
       stroke="#000000"
       stroke-width="2.8"
-      stroke-linecap="square"
+      stroke-linecap="butt"
       stroke-linejoin="miter"
-    />
+    >
+      <path
+        id="monogram-t-bar"
+        d="M10.5902056 3.6H26.5902056L25.8097944 6.4H9.8097944Z"
+        fill="#000000"
+        stroke="none"
+      />
+      <path
+        id="monogram-t-stem"
+        d="M19.3 5L14.3141213 22.8885975"
+        transform="translate(0 .328125)"
+      />
+    </g>
   </g>
 </svg>

@@ -50,7 +50,6 @@ const elements = {
   emptyState: document.querySelector("[data-empty-state]"),
   generalWhatsappLinks: document.querySelectorAll("[data-general-whatsapp]"),
   instagramLinks: document.querySelectorAll("[data-instagram]"),
-  instagramHandles: document.querySelectorAll("[data-instagram-handle]"),
   currentYear: document.querySelector("[data-current-year]"),
   dialog: document.querySelector("[data-product-dialog]"),
   dialogClose: document.querySelector("[data-dialog-close]"),
@@ -386,7 +385,7 @@ function renderProductCard(product) {
           aria-label="Imagen anterior de ${escapeHtml(product.name)}"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7"></path>
+            <use href="#carousel-arrow-previous"></use>
           </svg>
         </button>
         <button
@@ -396,7 +395,7 @@ function renderProductCard(product) {
           aria-label="Imagen siguiente de ${escapeHtml(product.name)}"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5l7 7-7 7"></path>
+            <use href="#carousel-arrow-next"></use>
           </svg>
         </button>
         <span class="visually-hidden" aria-live="polite" data-card-position>
@@ -1452,11 +1451,12 @@ function configureContactLinks() {
 
   elements.instagramLinks.forEach((link) => {
     link.href = SITE_CONFIG.instagramUrl;
-    link.setAttribute("aria-label", SITE_CONFIG.instagramLabel);
-  });
-
-  elements.instagramHandles.forEach((handle) => {
-    handle.textContent = `@${SITE_CONFIG.instagramHandle}`;
+    link.setAttribute(
+      "aria-label",
+      link.hasAttribute("data-instagram-footer")
+        ? `Síguenos en Instagram: @${SITE_CONFIG.instagramHandle}`
+        : SITE_CONFIG.instagramLabel,
+    );
   });
 
   elements.confirmationNote.textContent = SITE_CONFIG.confirmationNote;
