@@ -63,7 +63,6 @@ const elements = {
   galleryCaption: document.querySelector("[data-gallery-caption]"),
   galleryPrevious: document.querySelector("[data-gallery-previous]"),
   galleryNext: document.querySelector("[data-gallery-next]"),
-  galleryPosition: document.querySelector("[data-gallery-position]"),
   galleryThumbnails: document.querySelector("[data-gallery-thumbnails]"),
   confirmationNote: document.querySelector("[data-confirmation-note]"),
   dialogShell: document.querySelector(".dialog-shell"),
@@ -649,14 +648,13 @@ function renderGallery() {
     elements.galleryImage.removeAttribute("aria-describedby");
   }
   elements.galleryStage.classList.toggle("is-ai", isAi);
-  elements.galleryPosition.textContent = `${state.galleryIndex + 1} de ${
-    orderedImages.length
-  }`;
 
   if (elements.galleryThumbnails.dataset.productId !== product.id) {
-    elements.galleryThumbnails.innerHTML = orderedImages
-      .map(
-        (thumbnail, index) => `
+    elements.galleryThumbnails.innerHTML = `
+      <div class="gallery-thumbnails__track">
+        ${orderedImages
+          .map(
+            (thumbnail, index) => `
           <button
             class="gallery-thumbnail"
             type="button"
@@ -676,8 +674,10 @@ function renderGallery() {
             >
           </button>
         `,
-      )
-      .join("");
+          )
+          .join("")}
+      </div>
+    `;
     elements.galleryThumbnails.dataset.productId = product.id;
   }
 
@@ -863,6 +863,7 @@ function openProduct(productId, trigger) {
   renderGallery();
   lockDocument();
   elements.dialog.showModal();
+  elements.galleryThumbnails.scrollLeft = 0;
   fitDialogTitle();
   elements.dialog.classList.remove("is-sizing-title");
   resetDialogScroll();
