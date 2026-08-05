@@ -1,0 +1,16 @@
+{
+  "name": "santokyo-static-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-site.mjs",
+    "check:generated": "node scripts/generate-site.mjs --check",
+    "lint": "node scripts/lint.mjs",
+    "validate": "node scripts/validate-site.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run check:generated && npm run lint && npm run validate && npm test",
+    "prebuild": "npm run check",
+    "build": "node scripts/build.mjs",
+    "test:browser": "node tests/browser.mjs"
+  }
+}

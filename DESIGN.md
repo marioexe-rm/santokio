@@ -150,11 +150,11 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 
 El lienzo está limitado a 96rem y usa un gutter fluido entre 1rem y 3.5rem. La rampa espacial avanza en nueve pasos, de 0.375rem a 8rem, y los capítulos principales respiran con los pasos 7 a 9.
 
-La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una visualización IA dominante y el siguiente slide en anticipo a la derecha. El catálogo reutiliza las doce columnas, pero alterna proporciones 8/4, 4/8 y 7/5 para impedir una cuadrícula de tarjetas uniformes. Los datos siempre quedan unidos a la visualización por una regla, y la evidencia fotográfica real queda en la ficha.
+La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una visualización IA dominante y el siguiente slide en anticipo a la derecha. El catálogo reutiliza las doce columnas con una proporción visual/resumen constante de 8/4 y alterna la ubicación de ambos bloques. Los datos siempre quedan unidos a la visualización por una regla, y la evidencia fotográfica real queda en la ficha.
 
 A 72rem se comprime la navegación y la evidencia pasa a dos columnas. A 58rem aparece el menú desplegable, el hero se apila en tres filas y el catálogo adopta una relación visual/resumen 7/5. A 42rem, hero, herramientas, catálogo, proceso, evidencia, footer y diálogo pasan a flujo vertical; la anticipación de la siguiente pieza se conserva como una franja lateral estrecha. A 23.5rem se reducen gutters y miniaturas.
 
-**The Unequal Sequence Rule.** Las piezas forman una secuencia de proporciones alternadas; no se normalizan en tarjetas repetidas ni en un carrusel automático.
+**The Unequal Sequence Rule.** Las piezas forman una secuencia editorial alternando la posición de imagen y resumen; no se normalizan en tarjetas repetidas.
 
 ## Elevation & Depth
 
@@ -189,11 +189,11 @@ El encabezado es sticky, tiza y separado por una regla. Los enlaces dibujan una 
 
 ### Panoramic Sequence
 
-La secuencia hero recorre cada cuatro segundos, en orden de catálogo, las tres visualizaciones IA de cada prenda de la colección —un desfile completo que vuelve a la primera al terminar— y muestra la siguiente en un anticipo parcial. Las capas índigo y orquídea se inclinan detrás de las imágenes; el revelado de cada slide reutiliza la entrada inicial (760ms, curva de salida expresiva) y se detiene con movimiento reducido o pestaña oculta. En desktop, la imagen absorbe aproximadamente la mitad del alto liberado por el índice retirado y la mitad restante queda como aire tiza.
+La secuencia hero parte con la primera visualización ya presente en HTML y avanza cada cuatro segundos, en orden de catálogo, por las tres visualizaciones IA de cada prenda. Muestra la siguiente en un anticipo parcial, vuelve a la primera al completar la colección y pausa el temporizador con movimiento reducido o cuando la pestaña está oculta. Las capas índigo y orquídea se inclinan detrás de las imágenes y cada cambio reutiliza la transición de entrada. En desktop, la imagen absorbe aproximadamente la mitad del alto liberado por el índice retirado y la mitad restante queda como aire tiza.
 
 ### Product Entry
 
-Cada entrada contrapone un carrusel de tres visualizaciones IA sobre tiza luminosa con un resumen tiza y un índice editorial. Las proporciones alternan por posición, los hechos se alinean en filas con regla, “Ver detalle” abre el diálogo y “Consultar esta prenda” inicia la conversación específica por WhatsApp; la imagen nunca es un fondo decorativo y los chevrons mantienen estado independiente por producto.
+Cada entrada contrapone un carrusel de tres visualizaciones IA sobre tiza luminosa con un resumen tiza y un índice editorial. El ancho visual permanece constante mientras imagen y resumen alternan su ubicación; los hechos se alinean en filas con regla, “Ver detalle” abre el diálogo y “Consultar esta prenda” inicia la conversación específica por WhatsApp. La imagen nunca es un fondo decorativo, los chevrons mantienen estado independiente por producto, la etiqueta IA se ancla abajo a la derecha y el acceso al detalle arriba a la derecha.
 
 ### Product Dialog
 

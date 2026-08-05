@@ -9,11 +9,16 @@ index.html                 estructura semántica, secciones y diálogo
 styles.css                 sistema visual, responsive y estados
 script.js                  render, carruseles, anclas, galería, foco y enlaces externos
 data/products.js           configuración comercial y catálogo centralizado
+data/site-content.js       render compartido, formatos y datos estructurados
+scripts/                   generación, validación y build estático
+tests/                     regresiones SEO y navegación real en navegador
+dist/                      salida de producción generada y no versionada
 CNAME                      dominio personalizado de GitHub Pages
 sitemap.xml                URL pública indexable
 robots.txt                 acceso de rastreo y ubicación del sitemap
 assets/fonts/              Funnel Sans autoalojada y licencia OFL
-assets/catalogo/           copias públicas sin metadatos privados
+assets/catalogo/           fuentes saneadas y derivados WebP responsivos
+assets/social/             imagen social construida con fotografías reales
 ropa/                      activos fuente locales del inventario, no versionados
 DESIGN.md                  sistema visual implementado
 PRODUCT.md                 autoridad sobre el producto
@@ -21,11 +26,20 @@ PRODUCT.md                 autoridad sobre el producto
 .github/workflows/pages.yml despliegue automático en GitHub Pages
 ```
 
-No hay framework, bundler, dependencias de JavaScript ni proceso de compilación.
+No hay framework, bundler ni dependencias de ejecución. Un proceso ligero en Node
+genera el catálogo rastreable de `index.html`, valida los datos y crea una salida
+de producción que excluye los originales pesados.
 
 ## Ejecutar localmente
 
-Requiere un navegador moderno y Python 3. Desde la raíz:
+Requiere Node.js 24, un navegador moderno y Python 3. Genera y valida el HTML:
+
+```bash
+npm run generate
+npm run check
+```
+
+Para trabajar sobre la raíz:
 
 ```bash
 python3 -m http.server 8000
@@ -83,13 +97,14 @@ No uses una visualización generada con IA para deducir talla, composición, med
 2. Agrega las fotografías sin modificar, renombrar, convertir ni sobrescribir los archivos originales.
 3. Crea un objeto nuevo en el arreglo `products`.
 4. Genera copias públicas en `assets/catalogo/[N]/`, eliminando EXIF, GPS y otros metadatos privados sin sobrescribir los originales.
-5. Ordena primero las tres visualizaciones IA y después las dos fotografías reales disponibles, sin duplicar archivos.
-6. Clasifica cada activo con `kind: "real-product-photo"` o `kind: "ai-model-visualization"`.
-7. Completa un `alt` descriptivo y conciso; para IA, agrega además el aviso referencial centralizado en `disclosure`. Las tarjetas usan solo las imágenes IA y las fotografías reales permanecen en el detalle.
-8. Mantén `availability: 1` mientras la prenda esté publicada; retírala del arreglo en cuanto se venda.
-9. Levanta el servidor, abre la tarjeta y recorre toda la galería para revisar rutas, orden, avisos y WhatsApp.
+5. Crea derivados WebP responsivos sin destruir las fuentes y registra `source`, `src`, `srcset`, `width` y `height` reales.
+6. Ordena primero las tres visualizaciones IA y después las dos fotografías reales disponibles, sin duplicar archivos.
+7. Clasifica cada activo con `kind: "real-product-photo"` o `kind: "ai-model-visualization"`.
+8. Completa un `alt` descriptivo y conciso; para IA, agrega además el aviso referencial centralizado en `disclosure`. Las tarjetas usan solo las imágenes IA y las fotografías reales permanecen en el detalle.
+9. Mantén `availability: 1` mientras la prenda esté publicada; retírala del arreglo en cuanto se venda.
+10. Ejecuta `npm run generate && npm run build`, sirve `dist/` y recorre la ficha para revisar rutas, orden, avisos y WhatsApp.
 
-La composición admite veinte a treinta productos. La búsqueda funciona con nombre e identificador. Los filtros por talla, material u otros campos no se muestran mientras los datos sean insuficientes; el orden por precio debe añadirse solo cuando existan al menos dos precios numéricos verificados.
+La composición está preparada para treinta a cincuenta productos. La búsqueda funciona con nombre e identificador. Los filtros por talla, material u otros campos no se muestran mientras los datos sean insuficientes; el orden por precio debe añadirse solo cuando existan al menos dos precios numéricos verificados.
 
 ## Precios, disponibilidad y verificación
 
@@ -112,19 +127,25 @@ Confirma que:
 - no existan rutas absolutas del computador;
 - no se publiquen placeholders como si fueran datos confirmados.
 
-Comprobaciones básicas sin instalar dependencias:
+Comprobaciones completas sin instalar dependencias:
 
 ```bash
-node --check script.js
-node --check data/products.js
-git status --short
+npm run check
+npm run build
+npm run test:browser -- http://127.0.0.1:8000/
 ```
+
+`npm run check` detecta deriva del HTML generado, sintaxis inválida, campos
+esenciales ausentes, slugs repetidos, recursos y enlaces internos rotos,
+metadatos incoherentes y JSON-LD malformado. La suite de navegador requiere un
+Chrome con depuración remota en el puerto `9222`.
 
 La revisión visual debe cubrir, como mínimo, `360 × 800`, `390 × 844`, `430 × 932`, `768 × 1024` y `1440 × 900`, además de teclado, Escape, retorno de foco, búsqueda sin resultados, limpiar filtros, carruseles, anclas, galerías y enlaces externos.
 
 ## Despliegue estático
 
-Cada push a `main` ejecuta `.github/workflows/pages.yml` y publica la raíz mediante GitHub Pages, sin build:
+Cada push a `main` ejecuta `.github/workflows/pages.yml`, valida el proyecto,
+construye `dist/` y publica únicamente esa salida mediante GitHub Pages:
 
 ```text
 https://santokyo.com/
@@ -141,9 +162,10 @@ Antes de publicar:
 2. usa siempre una fotografía real saneada como `og:image`;
 3. revisa caché y peso de las copias públicas sin modificar los originales.
 
-El prototipo omite datos estructurados `Product`: precio y otros campos
-comerciales todavía no permiten representar cada prenda con suficiente precisión.
-Agrégalos solo cuando esos datos estén verificados.
+La página publica `Organization`, `WebSite`, `CollectionPage` e `ItemList`. Omite
+deliberadamente `Product` y `Offer`: las prendas actuales comparten una sola URL y
+no tienen precio verificado. Incorpóralos solo si cada ficha obtiene una URL real
+y sus datos comerciales visibles están comprobados.
 
 ## Limitaciones actuales
 
@@ -153,10 +175,10 @@ Agrégalos solo cuando esos datos estén verificados.
 - No existe un panel para editar productos; los cambios se hacen en el archivo de datos.
 - El envío dentro de Santiago cuesta $3.000, se paga previamente y no es reembolsable. La decisión sobre la prenda se toma durante la misma entrega; no existe un plazo de devolución posterior documentado.
 - Las imágenes originales contienen metadatos privados y quedan excluidas de Git; sólo se publican copias saneadas.
-- `ropa/` pesa aproximadamente 55 MB y las fotografías documentales tienen resolución
-  original. El hero recorre en orden las visualizaciones IA de toda la colección y
-  precarga solo la siguiente, pero un despliegue real deberá definir derivados
-  responsivos no destructivos con autorización explícita.
+- `ropa/` y las copias públicas fuente pesan aproximadamente 55 MB y no se incluyen
+  en `dist/`; producción usa derivados WebP responsivos no destructivos.
+- El hero recorre automáticamente la secuencia editorial cada cuatro segundos y
+  pausa el temporizador con movimiento reducido o cuando la pestaña está oculta.
 
 ## Posibles pasos futuros
 

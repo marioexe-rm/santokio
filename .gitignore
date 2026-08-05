@@ -8,3 +8,6 @@
 # Fotografías fuente: contienen metadatos privados y no se publican.
 # El sitio usa copias saneadas bajo assets/catalogo/.
 ropa/
+
+# Salida reproducible del build estático.
+dist/

@@ -1,19 +1,23 @@
-import { products, SITE_CONFIG, VERIFICATION } from "./data/products.js?v=3";
+import { products, SITE_CONFIG } from "./data/products.js?v=4";
+import {
+  AI_IMAGE_KIND,
+  REAL_IMAGE_KIND,
+  buildHeroSlides,
+  escapeHtml,
+  formatPrice,
+  getAiImages,
+  getContainedImageAspectRatio,
+  getImageSrcset,
+  getOrderedImages,
+  getProductFacts,
+  makeProductWhatsappUrl,
+  makeWhatsappUrl,
+  renderAvailability,
+  renderHeroSlideMarkup,
+  renderImageAttributes,
+  renderProductCardMarkup,
+} from "./data/site-content.js?v=2";
 
-const moneyFormatter = new Intl.NumberFormat(SITE_CONFIG.locale, {
-  style: "currency",
-  currency: SITE_CONFIG.currency,
-  maximumFractionDigits: 0,
-});
-
-const yenFormatter = new Intl.NumberFormat("ja-JP", {
-  style: "currency",
-  currency: "JPY",
-  maximumFractionDigits: 0,
-});
-
-const AI_IMAGE_KIND = "ai-model-visualization";
-const REAL_IMAGE_KIND = "real-product-photo";
 const HERO_ROTATION_MS = 4000;
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -59,8 +63,10 @@ const elements = {
   dialogFacts: document.querySelector("[data-dialog-facts]"),
   dialogWhatsapp: document.querySelector("[data-dialog-whatsapp]"),
   galleryStage: document.querySelector("[data-gallery-stage]"),
+  galleryImageFrame: document.querySelector("[data-gallery-image-frame]"),
   galleryImage: document.querySelector("[data-gallery-image]"),
   galleryCaption: document.querySelector("[data-gallery-caption]"),
+  galleryPositionCount: document.querySelector("[data-gallery-position-count]"),
   galleryPrevious: document.querySelector("[data-gallery-previous]"),
   galleryNext: document.querySelector("[data-gallery-next]"),
   galleryThumbnails: document.querySelector("[data-gallery-thumbnails]"),
@@ -69,170 +75,11 @@ const elements = {
   dialogProduct: document.querySelector(".dialog-product"),
 };
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function formatIndex(index) {
-  return String(index + 1).padStart(2, "0");
-}
-
-function formatPrice(product) {
-  const isVerified =
-    product.fieldVerification.priceClp === VERIFICATION.VERIFIED;
-
-  return Number.isFinite(product.priceClp) && isVerified
-    ? moneyFormatter.format(product.priceClp)
-    : "Precio por definir";
-}
-
-function formatAvailability(product) {
-  return product.availability === null || product.availability === undefined
-    ? ""
-    : String(product.availability);
-}
-
-function renderAvailability(product, value = formatAvailability(product)) {
-  return `
-    <span class="availability" data-availability="${escapeHtml(value)}">
-      <span class="availability-indicator" aria-hidden="true"></span>
-      <span class="availability-label">${escapeHtml(value)}</span>
-    </span>
-  `;
-}
-
-function formatMaterials(product) {
-  if (
-    product.fieldVerification.materials !== VERIFICATION.VERIFIED ||
-    !product.materials
-  ) {
-    return "Composición por confirmar";
-  }
-
-  return Array.isArray(product.materials)
-    ? product.materials.join(", ")
-    : product.materials;
-}
-
-function formatMeasurements(product) {
-  if (
-    product.fieldVerification.measurements !== VERIFICATION.VERIFIED ||
-    !product.measurements
-  ) {
-    return "Medidas por confirmar";
-  }
-
-  if (Array.isArray(product.measurements)) {
-    return product.measurements.join(" · ");
-  }
-
-  if (typeof product.measurements === "object") {
-    return Object.entries(product.measurements)
-      .map(([label, value]) => `${label}: ${value}`)
-      .join(" · ");
-  }
-
-  return String(product.measurements);
-}
-
-function getRealImages(product) {
-  return product.images.filter((image) => image.kind === REAL_IMAGE_KIND);
-}
-
-function getAiImages(product) {
-  return product.images.filter((image) => image.kind === AI_IMAGE_KIND);
-}
-
-function getOrderedImages(product) {
-  const aiImages = getAiImages(product);
-  const realImages = getRealImages(product);
-  const classifiedImages = new Set([...aiImages, ...realImages]);
-  const otherImages = product.images.filter(
-    (image) => !classifiedImages.has(image),
-  );
-
-  return [...aiImages, ...realImages, ...otherImages];
-}
-
-function makeWhatsappUrl(message) {
-  return `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
-}
-
-function makeProductWhatsappUrl(product) {
-  return makeWhatsappUrl(
-    `Hola, quisiera consultar por ${product.name}, referencia ${product.id}. ¿Sigue disponible?`,
-  );
-}
-
-function buildHeroSlides() {
-  const slides = [];
-
-  products.forEach((product, productIndex) => {
-    const aiImages = getAiImages(product);
-
-    if (aiImages.length !== 3) {
-      console.warn(
-        `SanTokyo: ${product.id} tiene ${aiImages.length} visualizaciones IA; el hero esperaba 3 y usa las disponibles.`,
-      );
-    }
-
-    aiImages.forEach((image, imageIndex) => {
-      slides.push({
-        product,
-        productIndex,
-        image,
-        imageIndex,
-        imageCount: aiImages.length,
-      });
-    });
-  });
-
-  return slides;
-}
-
-function renderHeroSlide(slide, slideIndex, priority = false) {
-  const { product, productIndex, image, imageIndex, imageCount } = slide;
-  const loading = priority ? "eager" : "lazy";
-  const fetchPriority = priority
-    ? ' fetchpriority="high"'
-    : ' fetchpriority="low"';
-
-  return `
-    <a
-      class="hero-product-link"
-      href="#producto-${escapeHtml(product.slug)}"
-      data-open-product="${escapeHtml(product.id)}"
-      data-hero-slide="${slideIndex}"
-      aria-label="Abrir detalle de ${escapeHtml(product.name)} desde la visualización ${
-        imageIndex + 1
-      } de ${imageCount}"
-    >
-      <figure>
-        <img
-          src="${escapeHtml(image.src)}"
-          alt="${escapeHtml(image.alt)}"
-          width="${image.width}"
-          height="${image.height}"
-          loading="${loading}"
-          decoding="async"${fetchPriority}
-        >
-        <figcaption>
-          <span>${formatIndex(productIndex)} · ${escapeHtml(product.name)}</span>
-          <span>${escapeHtml(formatPrice(product))}</span>
-        </figcaption>
-      </figure>
-    </a>
-  `;
-}
-
 function preloadHeroImage(image) {
   const preload = new Image();
   preload.decoding = "async";
+  preload.srcset = getImageSrcset(image);
+  preload.sizes = "(max-width: 42rem) 100vw, 65vw";
   preload.src = image.src;
   preload.decode?.().catch(() => {});
 }
@@ -249,14 +96,15 @@ function renderHeroFrame({ animate = false } = {}) {
     elements.heroPrimary.classList.add("is-transition-reset");
   }
 
-  elements.heroPrimary.innerHTML = renderHeroSlide(
+  elements.heroPrimary.innerHTML = renderHeroSlideMarkup(
     state.heroSlides[currentIndex],
     currentIndex,
-    true,
+    { priority: true },
   );
-  elements.heroPreview.innerHTML = renderHeroSlide(
+  elements.heroPreview.innerHTML = renderHeroSlideMarkup(
     state.heroSlides[nextIndex],
     nextIndex,
+    { sizes: "(max-width: 42rem) 28vw, (max-width: 58rem) 28vw, 16vw" },
   );
 
   if (animate && !reducedMotionQuery.matches) {
@@ -294,19 +142,32 @@ function scheduleHeroRotation() {
       return;
     }
 
-    state.heroSlideIndex = (state.heroSlideIndex + 1) % state.heroSlides.length;
+    state.heroSlideIndex =
+      (state.heroSlideIndex + 1) % state.heroSlides.length;
     renderHeroFrame({ animate: true });
     scheduleHeroRotation();
   }, HERO_ROTATION_MS);
 }
 
 function renderHero() {
-  state.heroSlides = buildHeroSlides();
+  state.heroSlides = buildHeroSlides(products);
   state.heroSlideIndex = 0;
   elements.heroSequence.dataset.heroSlideCount = String(state.heroSlides.length);
-  renderHeroFrame();
-  scheduleHeroRotation();
 
+  const prerenderedPrimary = elements.heroPrimary.querySelector(
+    '[data-hero-slide="0"]',
+  );
+  const prerenderedPreview = elements.heroPreview.querySelector(
+    '[data-hero-slide="1"]',
+  );
+
+  if (!prerenderedPrimary || (state.heroSlides.length > 1 && !prerenderedPreview)) {
+    renderHeroFrame();
+  } else if (state.heroSlides.length > 2) {
+    preloadHeroImage(state.heroSlides[2].image);
+  }
+
+  scheduleHeroRotation();
 }
 
 function getVisibleProducts() {
@@ -337,121 +198,8 @@ function getVisibleProducts() {
 
 function renderProductCard(product) {
   const originalIndex = products.indexOf(product);
-  const cardImages = getAiImages(product).slice(0, 3);
   const storedImageIndex = state.cardImageIndices.get(product.id) ?? 0;
-  const cardImageIndex = cardImages.length
-    ? storedImageIndex % cardImages.length
-    : 0;
-  const image = cardImages[cardImageIndex] ?? product.images[0];
-  const size =
-    product.fieldVerification.size === VERIFICATION.VERIFIED && product.size
-      ? product.size
-      : "Talla por confirmar";
-
-  return `
-    <article
-      class="product-entry"
-      id="producto-${escapeHtml(product.slug)}"
-      data-product-entry="${escapeHtml(product.id)}"
-    >
-      <div class="product-visual">
-        <button
-          class="product-open"
-          type="button"
-          data-open-product="${escapeHtml(product.id)}"
-          aria-label="Ver detalle de ${escapeHtml(product.name)}, referencia ${escapeHtml(product.id)}"
-        >
-          <img
-            src="${escapeHtml(image.src)}"
-            alt="${escapeHtml(image.alt)}"
-            width="${image.width}"
-            height="${image.height}"
-            loading="lazy"
-            decoding="async"
-            fetchpriority="low"
-            data-card-image
-          >
-          <span class="product-open-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-          </span>
-        </button>
-        <button
-          class="card-carousel-control card-carousel-previous"
-          type="button"
-          data-card-previous="${escapeHtml(product.id)}"
-          aria-label="Imagen anterior de ${escapeHtml(product.name)}"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#carousel-arrow-previous"></use>
-          </svg>
-        </button>
-        <button
-          class="card-carousel-control card-carousel-next"
-          type="button"
-          data-card-next="${escapeHtml(product.id)}"
-          aria-label="Imagen siguiente de ${escapeHtml(product.name)}"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#carousel-arrow-next"></use>
-          </svg>
-        </button>
-        <span class="visually-hidden" aria-live="polite" data-card-position>
-          Visualización ${cardImageIndex + 1} de ${cardImages.length} de ${escapeHtml(product.name)}
-        </span>
-      </div>
-      <div class="product-summary">
-        <div>
-          <p class="product-number" aria-hidden="true">${formatIndex(originalIndex)}</p>
-          <h3>${escapeHtml(product.name)}</h3>
-          <p class="product-category">${escapeHtml(product.category ?? "Categoría por confirmar")} · ${escapeHtml(product.id)}</p>
-          <p class="product-description">${escapeHtml(product.shortDescription)}</p>
-        </div>
-        <div>
-          <dl class="product-meta">
-            <div>
-              <dt>Talla</dt>
-              <dd>${escapeHtml(size)}</dd>
-            </div>
-            <div>
-              <dt>Precio</dt>
-              <dd>${escapeHtml(formatPrice(product))}</dd>
-            </div>
-            <div>
-              <dt>Estado</dt>
-              <dd>${escapeHtml(product.condition)}</dd>
-            </div>
-            <div>
-              <dt>Stock</dt>
-              <dd>${renderAvailability(product)}</dd>
-            </div>
-          </dl>
-          <div class="product-actions">
-            <button
-              class="button button-secondary product-detail-button"
-              type="button"
-              data-open-product="${escapeHtml(product.id)}"
-            >
-              Ver detalle
-            </button>
-            <a
-              class="button button-primary product-whatsapp-button"
-              href="${escapeHtml(makeProductWhatsappUrl(product))}"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-product-whatsapp="${escapeHtml(product.id)}"
-            >
-              <span>Consultar esta prenda</span>
-              <svg class="cta-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h13M14 7l5 5-5 5"></path>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-    </article>
-  `;
+  return renderProductCardMarkup(product, originalIndex, storedImageIndex);
 }
 
 function changeCardImage(productId, offset) {
@@ -469,13 +217,21 @@ function changeCardImage(productId, offset) {
   const nextIndex = (currentIndex + offset + cardImages.length) % cardImages.length;
   const image = cardImages[nextIndex];
   const cardImage = productEntry.querySelector("[data-card-image]");
+  const cardImageFrame = productEntry.querySelector(
+    "[data-product-image-frame]",
+  );
   const cardPosition = productEntry.querySelector("[data-card-position]");
 
   state.cardImageIndices.set(productId, nextIndex);
+  cardImage.srcset = getImageSrcset(image);
   cardImage.src = image.src;
   cardImage.alt = image.alt;
   cardImage.width = image.width;
   cardImage.height = image.height;
+  cardImageFrame.style.setProperty(
+    "--contained-image-aspect-ratio",
+    getContainedImageAspectRatio(image),
+  );
   cardPosition.textContent = `Visualización ${nextIndex + 1} de ${
     cardImages.length
   } de ${product.name}`;
@@ -503,41 +259,6 @@ function normalizedStatusText(resultLabel, query) {
   return query.trim()
     ? `${resultLabel} para “${query.trim()}”.`
     : `${resultLabel} en la colección.`;
-}
-
-function getProductFacts(product) {
-  const facts = [
-    ["Referencia", product.id],
-    ["Categoría", product.category ?? "Por confirmar"],
-    [
-      "Talla",
-      product.fieldVerification.size === VERIFICATION.VERIFIED && product.size
-        ? product.size
-        : "Talla por confirmar",
-    ],
-    ["Composición", formatMaterials(product)],
-    ["Medidas", formatMeasurements(product)],
-    ["Procedencia", product.origin],
-    [
-      "País de fabricación",
-      product.fieldVerification.manufactureCountry === VERIFICATION.VERIFIED &&
-      product.manufactureCountry
-        ? product.manufactureCountry
-        : "Por confirmar",
-    ],
-    ["Etiqueta", product.originalTag],
-    ["Condición", product.condition],
-    ["Disponibilidad", formatAvailability(product), "availability"],
-  ];
-
-  if (
-    product.fieldVerification.originalPriceYen === VERIFICATION.VERIFIED &&
-    Number.isFinite(product.originalPriceYen)
-  ) {
-    facts.push(["Precio original", yenFormatter.format(product.originalPriceYen)]);
-  }
-
-  return facts;
 }
 
 function renderDialogProduct(product) {
@@ -587,9 +308,8 @@ function invalidateGalleryStage() {
 function setGalleryStageImage(image) {
   const token = ++galleryStageToken;
   const stageImage = elements.galleryImage;
-  const resolvedSrc = new URL(image.src, window.location.href).href;
   const alreadyShown =
-    stageImage.currentSrc === resolvedSrc &&
+    stageImage.dataset.imageSrc === image.src &&
     stageImage.complete &&
     stageImage.naturalWidth > 0;
 
@@ -597,6 +317,13 @@ function setGalleryStageImage(image) {
   stageImage.alt = image.alt;
   stageImage.width = image.width;
   stageImage.height = image.height;
+  elements.galleryImageFrame.style.setProperty(
+    "--contained-image-aspect-ratio",
+    getContainedImageAspectRatio(image),
+  );
+  stageImage.srcset = getImageSrcset(image);
+  stageImage.sizes = "(max-width: 42rem) 100vw, 65vw";
+  stageImage.dataset.imageSrc = image.src;
 
   if (alreadyShown) {
     elements.galleryStage.classList.remove("is-updating");
@@ -640,14 +367,18 @@ function renderGallery() {
   const isAi = image.kind === AI_IMAGE_KIND;
 
   setGalleryStageImage(image);
-  elements.galleryCaption.textContent = isAi ? image.disclosure : "";
-  elements.galleryCaption.hidden = !isAi;
-  if (isAi) {
+  elements.galleryCaption.textContent = image.disclosure ?? "";
+  elements.galleryCaption.hidden = !elements.galleryCaption.textContent;
+  elements.galleryCaption.classList.toggle("is-real", !isAi);
+  if (elements.galleryCaption.textContent) {
     elements.galleryImage.setAttribute("aria-describedby", "gallery-caption");
   } else {
     elements.galleryImage.removeAttribute("aria-describedby");
   }
   elements.galleryStage.classList.toggle("is-ai", isAi);
+  elements.galleryPositionCount.textContent = `Imagen ${
+    state.galleryIndex + 1
+  } de ${orderedImages.length}`;
 
   if (elements.galleryThumbnails.dataset.productId !== product.id) {
     elements.galleryThumbnails.innerHTML = `
@@ -664,13 +395,13 @@ function renderGallery() {
             aria-current="false"
           >
             <img
-              src="${escapeHtml(thumbnail.src)}"
-              alt=""
-              width="${thumbnail.width}"
-              height="${thumbnail.height}"
-              loading="lazy"
-              decoding="async"
-              fetchpriority="low"
+              ${renderImageAttributes(thumbnail, {
+                alt: "",
+                sizes: "5rem",
+                loading: "lazy",
+                fetchPriority: "low",
+              })}
+              draggable="false"
             >
           </button>
         `,

@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Portable static site using semantic HTML5, modern CSS, and vanilla JavaScript. No framework, backend, shopping platform, or build process. It must run through a simple local server and remain suitable for later deployment to a static host.
+Portable static site using semantic HTML5, modern CSS, and vanilla JavaScript. No framework, backend, shopping platform, or runtime dependency. A lightweight Node build pre-renders and validates indexable catalogue HTML before deployment to a static host.
 
 ## Users
 
@@ -38,7 +38,7 @@ Prices are presented in Chilean pesos using CLP formatting.
 
 ## Capabilities and Constraints
 
-- The catalogue currently has one product per direct subfolder of `ropa/` and is expected to grow to approximately 20–30 products.
+- The catalogue currently has one product per direct subfolder of `ropa/` and is expected to grow to approximately 30–50 products.
 - Product content must be centralized in a maintainable data file rather than duplicated across HTML.
 - The site has no checkout, shopping cart, online payment flow, backend, or automatic inventory system.
 - Product-specific facts—including size, measurements, materials, price, colour, and construction—must come from real garment photographs, labels, or manually verified data. Availability follows the publication rule: one unit while listed, then immediate removal when sold. None of these facts may be inferred from AI-generated visualizations.
