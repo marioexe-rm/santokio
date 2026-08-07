@@ -150,11 +150,11 @@ La paleta enfrenta neutrales cálidos y tinta con dos planos cromáticos fríos;
 
 El lienzo está limitado a 96rem y usa un gutter fluido entre 1rem y 3.5rem. La rampa espacial avanza en nueve pasos, de 0.375rem a 8rem, y los capítulos principales respiran con los pasos 7 a 9.
 
-La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una visualización IA dominante y el siguiente slide en anticipo a la derecha. El catálogo reutiliza las doce columnas con una proporción visual/resumen constante de 8/4 y alterna la ubicación de ambos bloques. Los datos siempre quedan unidos a la visualización por una regla, y la evidencia fotográfica real queda en la ficha.
+La primera vista usa doce columnas: mensaje y acción ocupan el tercio izquierdo; la secuencia visual ocupa las ocho columnas restantes, con una visualización IA dominante y el siguiente slide en anticipo a la derecha. El catálogo adopta una cuadrícula mínima de cuatro columnas en desktop y dos en mobile: cada entrada conserva únicamente imagen, nombre y precio, mientras la evidencia fotográfica y los hechos completos quedan en la ficha.
 
 A 72rem se comprime la navegación y la evidencia pasa a dos columnas. A 58rem aparece el menú desplegable, el hero se apila en tres filas y el catálogo adopta una relación visual/resumen 7/5. A 42rem, hero, herramientas, catálogo, proceso, evidencia, footer y diálogo pasan a flujo vertical; la anticipación de la siguiente pieza se conserva como una franja lateral estrecha. A 23.5rem se reducen gutters y miniaturas.
 
-**The Unequal Sequence Rule.** Las piezas forman una secuencia editorial alternando la posición de imagen y resumen; no se normalizan en tarjetas repetidas.
+**The Minimal Grid Rule.** Todas las piezas comparten ancho, fondo y separación; la variedad visual proviene de las prendas y no de alternancias de tarjeta.
 
 ## Elevation & Depth
 
@@ -193,7 +193,7 @@ La secuencia hero parte con la primera visualización ya presente en HTML y avan
 
 ### Product Entry
 
-Cada entrada contrapone un carrusel de tres visualizaciones IA sobre tiza luminosa con un resumen tiza y un índice editorial. El ancho visual permanece constante mientras imagen y resumen alternan su ubicación; los hechos se alinean en filas con regla, “Ver detalle” abre el diálogo y “Consultar esta prenda” inicia la conversación específica por WhatsApp. La imagen nunca es un fondo decorativo, los chevrons mantienen estado independiente por producto, la etiqueta IA se ancla abajo a la derecha y el acceso al detalle arriba a la derecha.
+Cada entrada muestra una primera visualización de modelo, nombre y precio sobre tiza luminosa. Con hover o foco aparece “Ver detalle” y, cuando existe, se precarga la segunda visualización; el enlace único abre el diálogo. La etiqueta IA se ancla abajo a la derecha y el detalle concentra galería, hechos y consulta específica por WhatsApp.
 
 ### Product Dialog
 
@@ -213,14 +213,14 @@ Los estados funcionales duran 180–260ms. La entrada inicial mueve el plano ín
 
 - **Do** usar visualizaciones IA identificadas en hero y catálogo, y fotografía real local, completa y sin filtro como evidencia dentro del detalle.
 - **Do** mantener los datos, la disponibilidad y la acción de consulta próximos a la pieza correspondiente.
-- **Do** construir ritmo con módulos desiguales, espacio amplio, reglas finas y planos cromáticos detrás de las imágenes.
+- **Do** construir ritmo con una cuadrícula constante, espacio amplio y planos cromáticos en el hero.
 - **Do** describir WhatsApp como consulta directa y precompletar nombre y referencia de la prenda.
 - **Do** respetar la reducción de movimiento y conservar doble señal de foco.
 
 ### Don't:
 
-- **Don't** convertir el catálogo en tarjetas uniformes, añadir sombras o redondear sus contenedores.
+- **Don't** añadir sombras, divisores decorativos o redondear las entradas del catálogo.
 - **Don't** teñir, filtrar, deformar, enmascarar ni animar fotografías reales de forma que dificulte examinarlas.
 - **Don't** usar chartreuse como superficie dominante ni superponer índigo u orquídea sobre la prenda.
 - **Don't** presentar visualizaciones IA como evidencia de calce, color, material, construcción o proporción.
-- **Don't** fabricar precio, talla, medidas, materiales, disponibilidad, urgencia, descuentos o claims comerciales.
+- **Don't** fabricar datos comerciales fuera del bloque temporal identificado explícitamente como demo; nunca inventar urgencia, descuentos ni claims.

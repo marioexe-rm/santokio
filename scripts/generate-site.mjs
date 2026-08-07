@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { products } from "../data/products.js";
 import {
   buildHeroSlides,
+  renderHeaderWhatsappMarkup,
   renderHeroSlideMarkup,
   renderMetadataMarkup,
   renderProductCardMarkup,
@@ -45,11 +46,12 @@ function generateIndex(source) {
       })
     : "";
   const catalogue = products
-    .map((product, index) => renderProductCardMarkup(product, index))
+    .map((product) => renderProductCardMarkup(product))
     .join("");
 
   return [
     ["metadata", renderMetadataMarkup(products)],
+    ["header-whatsapp", renderHeaderWhatsappMarkup()],
     ["hero-primary", primary],
     ["hero-preview", preview],
     [

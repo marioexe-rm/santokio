@@ -104,7 +104,7 @@ No uses una visualización generada con IA para deducir talla, composición, med
 9. Mantén `availability: 1` mientras la prenda esté publicada; retírala del arreglo en cuanto se venda.
 10. Ejecuta `npm run generate && npm run build`, sirve `dist/` y recorre la ficha para revisar rutas, orden, avisos y WhatsApp.
 
-La composición está preparada para treinta a cincuenta productos. La búsqueda funciona con nombre e identificador. Los filtros por talla, material u otros campos no se muestran mientras los datos sean insuficientes; el orden por precio debe añadirse solo cuando existan al menos dos precios numéricos verificados.
+La composición está preparada para treinta a cincuenta productos. La búsqueda funciona con nombre y referencia; categoría, material, talla y rango de precio se derivan de la misma fuente central. El selector ordena por destacados, nombre y precio numérico. Los 27 registros adicionales marcados como demo sirven únicamente para probar estas combinaciones y deben sustituirse por inventario verificado antes de producción.
 
 ## Precios, disponibilidad y verificación
 

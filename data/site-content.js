@@ -1,4 +1,8 @@
-import { SITE_CONFIG, VERIFICATION } from "./products.js";
+import {
+  CATALOGUE_FILTER_OPTIONS,
+  SITE_CONFIG,
+  VERIFICATION,
+} from "./products.js?v=9";
 
 export const AI_IMAGE_KIND = "ai-model-visualization";
 export const REAL_IMAGE_KIND = "real-product-photo";
@@ -15,6 +19,18 @@ const yenFormatter = new Intl.NumberFormat("ja-JP", {
   maximumFractionDigits: 0,
 });
 
+const catalogueCollator = new Intl.Collator(SITE_CONFIG.locale, {
+  numeric: true,
+  sensitivity: "base",
+  usage: "sort",
+});
+
+export const SIZE_ORDER = CATALOGUE_FILTER_OPTIONS.sizes;
+
+export function isDisplayableProductField(status) {
+  return status === VERIFICATION.VERIFIED || status === VERIFICATION.DEMO;
+}
+
 export function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -29,12 +45,150 @@ export function formatIndex(index) {
 }
 
 export function formatPrice(product) {
-  const isVerified =
-    product.fieldVerification?.priceClp === VERIFICATION.VERIFIED;
+  const canDisplay = isDisplayableProductField(
+    product.fieldVerification?.priceClp,
+  );
 
-  return Number.isFinite(product.priceClp) && isVerified
+  return Number.isFinite(product.priceClp) && canDisplay
     ? moneyFormatter.format(product.priceClp)
     : "Precio por confirmar";
+}
+
+export function formatCurrencyValue(value) {
+  return Number.isFinite(value) ? moneyFormatter.format(value) : "—";
+}
+
+export function getProductReference(product) {
+  return product.reference || product.id || "";
+}
+
+export function getProductMaterialNames(product) {
+  const materials = Array.isArray(product.materials)
+    ? product.materials
+    : product.materials
+      ? [product.materials]
+      : [];
+
+  return materials
+    .map((material) =>
+      String(material).replace(/\s+\d+(?:[.,]\d+)?%\s*$/u, "").trim(),
+    )
+    .filter(Boolean);
+}
+
+export function getCatalogueFacets(catalogue) {
+  const prices = [];
+
+  catalogue.forEach((product) => {
+    if (Number.isFinite(product.priceClp)) {
+      prices.push(product.priceClp);
+    }
+  });
+
+  return {
+    categories: [...CATALOGUE_FILTER_OPTIONS.categories],
+    materials: [...CATALOGUE_FILTER_OPTIONS.materials],
+    sizes: [...CATALOGUE_FILTER_OPTIONS.sizes],
+    minPrice: prices.length ? Math.min(...prices) : 0,
+    maxPrice: prices.length ? Math.max(...prices) : 0,
+  };
+}
+
+function asFilterSet(value) {
+  return value instanceof Set ? value : new Set(value ?? []);
+}
+
+export function getVisibleCatalogueProducts(
+  catalogue,
+  {
+    query = "",
+    categories = [],
+    materials = [],
+    sizes = [],
+    minPrice = null,
+    maxPrice = null,
+    sort = "featured",
+  } = {},
+) {
+  const normalizedQuery = query.trim().toLocaleLowerCase(SITE_CONFIG.locale);
+  const selectedCategories = asFilterSet(categories);
+  const selectedMaterials = asFilterSet(materials);
+  const selectedSizes = asFilterSet(sizes);
+  const hasPriceFilter = Number.isFinite(minPrice) || Number.isFinite(maxPrice);
+
+  const visible = catalogue.filter((product) => {
+    const searchableText = [
+      product.name,
+      getProductReference(product),
+      product.id,
+      product.slug,
+      product.category,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase(SITE_CONFIG.locale);
+
+    if (normalizedQuery && !searchableText.includes(normalizedQuery)) {
+      return false;
+    }
+    if (selectedCategories.size && !selectedCategories.has(product.category)) {
+      return false;
+    }
+    if (selectedSizes.size && !selectedSizes.has(String(product.size).toUpperCase())) {
+      return false;
+    }
+    if (selectedMaterials.size) {
+      const productMaterials = getProductMaterialNames(product);
+      if (!productMaterials.some((material) => selectedMaterials.has(material))) {
+        return false;
+      }
+    }
+    if (hasPriceFilter) {
+      if (!Number.isFinite(product.priceClp)) {
+        return false;
+      }
+      if (Number.isFinite(minPrice) && product.priceClp < minPrice) {
+        return false;
+      }
+      if (Number.isFinite(maxPrice) && product.priceClp > maxPrice) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return visible
+    .map((product, sourceIndex) => ({ product, sourceIndex }))
+    .sort((left, right) => {
+      const stable = left.sourceIndex - right.sourceIndex;
+      if (sort === "name-asc") {
+        return (
+          catalogueCollator.compare(left.product.name, right.product.name) ||
+          catalogueCollator.compare(
+            getProductReference(left.product),
+            getProductReference(right.product),
+          ) ||
+          stable
+        );
+      }
+      if (sort === "price-asc" || sort === "price-desc") {
+        const leftPrice = left.product.priceClp;
+        const rightPrice = right.product.priceClp;
+        const leftValid = Number.isFinite(leftPrice);
+        const rightValid = Number.isFinite(rightPrice);
+        if (leftValid !== rightValid) {
+          return leftValid ? -1 : 1;
+        }
+        if (leftValid && rightValid && leftPrice !== rightPrice) {
+          return sort === "price-asc"
+            ? leftPrice - rightPrice
+            : rightPrice - leftPrice;
+        }
+        return stable;
+      }
+      return Number(right.product.featured) - Number(left.product.featured) || stable;
+    })
+    .map(({ product }) => product);
 }
 
 export function formatAvailability(product) {
@@ -69,7 +223,7 @@ export function renderAvailability(
 
 export function formatMaterials(product) {
   if (
-    product.fieldVerification?.materials !== VERIFICATION.VERIFIED ||
+    !isDisplayableProductField(product.fieldVerification?.materials) ||
     !product.materials
   ) {
     return "Composición por confirmar";
@@ -82,7 +236,7 @@ export function formatMaterials(product) {
 
 export function formatMeasurements(product) {
   if (
-    product.fieldVerification?.measurements !== VERIFICATION.VERIFIED ||
+    !isDisplayableProductField(product.fieldVerification?.measurements) ||
     !product.measurements
   ) {
     return "Medidas por confirmar";
@@ -102,7 +256,7 @@ export function formatMeasurements(product) {
 }
 
 export function formatSize(product) {
-  return product.fieldVerification?.size === VERIFICATION.VERIFIED &&
+  return isDisplayableProductField(product.fieldVerification?.size) &&
     product.size
     ? String(product.size)
     : "Talla por confirmar";
@@ -114,6 +268,10 @@ export function getRealImages(product) {
 
 export function getAiImages(product) {
   return product.images.filter((image) => image.kind === AI_IMAGE_KIND);
+}
+
+export function getModelImages(product) {
+  return getAiImages(product);
 }
 
 export function getOrderedImages(product) {
@@ -177,15 +335,39 @@ export function makeWhatsappUrl(message, config = SITE_CONFIG) {
 }
 
 export function makeProductWhatsappUrl(product, config = SITE_CONFIG) {
+  const productReference = getProductReference(product);
+  const reference = productReference ? ` (${productReference})` : "";
+  const productUrl = new URL(
+    `#producto-${product.slug}`,
+    config.publicSiteUrl,
+  ).href;
+
   return makeWhatsappUrl(
-    `Hola, quisiera consultar por ${product.name}, referencia ${product.id}. ¿Sigue disponible?`,
+    `Hola, quisiera consultar por ${product.name}${reference} de ${config.whatsappBrandName}: ${productUrl}`,
     config,
   );
 }
 
+export function renderHeaderWhatsappMarkup(config = SITE_CONFIG) {
+  return `
+    <a
+      class="header-social-link header-whatsapp"
+      href="${escapeHtml(makeWhatsappUrl(config.collectionWhatsappMessage, config))}"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Contactar por WhatsApp"
+      data-collection-whatsapp
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <use href="#whatsapp-icon"></use>
+      </svg>
+    </a>
+  `;
+}
+
 export function getProductFacts(product) {
   const facts = [
-    ["Referencia", product.id],
+    ["Referencia", getProductReference(product)],
     ["Categoría", product.category ?? "Por confirmar"],
     ["Talla", formatSize(product)],
     ["Composición", formatMaterials(product)],
@@ -193,7 +375,9 @@ export function getProductFacts(product) {
     ["Procedencia", product.origin],
     [
       "País de fabricación",
-      product.fieldVerification?.manufactureCountry === VERIFICATION.VERIFIED &&
+      isDisplayableProductField(
+        product.fieldVerification?.manufactureCountry,
+      ) &&
       product.manufactureCountry
         ? product.manufactureCountry
         : "Por confirmar",
@@ -204,7 +388,9 @@ export function getProductFacts(product) {
   ];
 
   if (
-    product.fieldVerification?.originalPriceYen === VERIFICATION.VERIFIED &&
+    isDisplayableProductField(
+      product.fieldVerification?.originalPriceYen,
+    ) &&
     Number.isFinite(product.originalPriceYen)
   ) {
     facts.push([
@@ -259,16 +445,13 @@ export function renderHeroSlideMarkup(
   `;
 }
 
-export function renderProductCardMarkup(
-  product,
-  originalIndex,
-  cardImageIndex = 0,
-) {
-  const cardImages = getAiImages(product).slice(0, 3);
-  const normalizedImageIndex = cardImages.length
-    ? cardImageIndex % cardImages.length
-    : 0;
-  const image = cardImages[normalizedImageIndex] ?? product.images[0];
+export function renderProductCardMarkup(product) {
+  const modelImages = getModelImages(product);
+  const image = modelImages[0] ?? product.images[0];
+  const secondaryImage = modelImages[1];
+  const productReference = getProductReference(product);
+  const reference = productReference ? `, referencia ${productReference}` : "";
+  const labelHidden = image.kind === AI_IMAGE_KIND ? "" : " hidden";
 
   return `
     <article
@@ -276,107 +459,36 @@ export function renderProductCardMarkup(
       id="producto-${escapeHtml(product.slug)}"
       data-product-entry="${escapeHtml(product.id)}"
     >
-      <div class="product-visual">
-        <a
-          class="product-open"
-          href="#producto-${escapeHtml(product.slug)}"
-          data-open-product="${escapeHtml(product.id)}"
-          aria-label="Visualización IA de ${escapeHtml(product.name)}, referencia ${escapeHtml(product.id)}. Ver detalle"
+      <a
+        class="product-visual product-open catalogue-product-visual"
+        href="#producto-${escapeHtml(product.slug)}"
+        data-open-product="${escapeHtml(product.id)}"
+        data-card-primary-kind="${escapeHtml(image.kind)}"
+        data-card-active-kind="${escapeHtml(image.kind)}"
+        ${secondaryImage ? `data-card-secondary-kind="${escapeHtml(secondaryImage.kind)}"` : ""}
+        aria-label="Ver detalle de ${escapeHtml(product.name)}${escapeHtml(reference)}"
+      >
+        <span
+          class="contained-image-frame product-image-frame"
+          style="${renderContainedImageFrameStyle(image)}"
+          data-product-image-frame
         >
-          <span
-            class="contained-image-frame product-image-frame"
-            style="${renderContainedImageFrameStyle(image)}"
-            data-product-image-frame
+          <img
+            ${renderImageAttributes(image, {
+              sizes: "(max-width: 58rem) 50vw, 25vw",
+              loading: "lazy",
+              fetchPriority: "low",
+            })}
+            draggable="false"
+            data-card-image
           >
-            <img
-              ${renderImageAttributes(image, {
-                sizes: "(max-width: 42rem) 100vw, (max-width: 58rem) 58vw, 66vw",
-                loading: "lazy",
-                fetchPriority: "low",
-              })}
-              draggable="false"
-              data-card-image
-            >
-            <span class="image-kind-label">Visualización IA</span>
-          </span>
-          <span class="product-open-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-          </span>
-        </a>
-        <button
-          class="card-carousel-control card-carousel-previous"
-          type="button"
-          data-card-previous="${escapeHtml(product.id)}"
-          aria-label="Imagen anterior de ${escapeHtml(product.name)}"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#carousel-arrow-previous"></use>
-          </svg>
-        </button>
-        <button
-          class="card-carousel-control card-carousel-next"
-          type="button"
-          data-card-next="${escapeHtml(product.id)}"
-          aria-label="Imagen siguiente de ${escapeHtml(product.name)}"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <use href="#carousel-arrow-next"></use>
-          </svg>
-        </button>
-        <span class="visually-hidden" aria-live="polite" data-card-position>
-          Visualización ${normalizedImageIndex + 1} de ${cardImages.length} de ${escapeHtml(product.name)}
+          <span class="image-kind-label"${labelHidden}>Visualización IA</span>
         </span>
-      </div>
+        <span class="catalogue-product-detail-label">Ver detalle</span>
+      </a>
       <div class="product-summary">
-        <div>
-          <p class="product-number" aria-hidden="true">${formatIndex(originalIndex)}</p>
-          <h3>${escapeHtml(product.name)}</h3>
-          <p class="product-category">${escapeHtml(product.category ?? "Categoría por confirmar")} · ${escapeHtml(product.id)}</p>
-          <p class="product-description">${escapeHtml(product.shortDescription)}</p>
-        </div>
-        <div>
-          <dl class="product-meta">
-            <div>
-              <dt>Talla</dt>
-              <dd>${escapeHtml(formatSize(product))}</dd>
-            </div>
-            <div>
-              <dt>Precio</dt>
-              <dd>${escapeHtml(formatPrice(product))}</dd>
-            </div>
-            <div>
-              <dt>Estado</dt>
-              <dd>${escapeHtml(product.condition)}</dd>
-            </div>
-            <div>
-              <dt>Stock</dt>
-              <dd>${renderAvailability(product)}</dd>
-            </div>
-          </dl>
-          <div class="product-actions">
-            <a
-              class="button button-secondary product-detail-button"
-              href="#producto-${escapeHtml(product.slug)}"
-              data-open-product="${escapeHtml(product.id)}"
-            >
-              Ver galería y detalle
-            </a>
-            <a
-              class="button button-primary product-whatsapp-button"
-              href="${escapeHtml(makeProductWhatsappUrl(product))}"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-product-whatsapp="${escapeHtml(product.id)}"
-            >
-              <span>Consultar esta prenda</span>
-              <svg class="cta-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h13M14 7l5 5-5 5"></path>
-              </svg>
-            </a>
-          </div>
-        </div>
+        <h3>${escapeHtml(product.name)}</h3>
+        <p class="product-card-price">${escapeHtml(formatPrice(product))}</p>
       </div>
     </article>
   `;

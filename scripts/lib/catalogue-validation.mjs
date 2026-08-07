@@ -1,15 +1,27 @@
 import fs from "node:fs";
 import path from "node:path";
-import { VERIFICATION } from "../../data/products.js";
+import {
+  CATALOGUE_FILTER_OPTIONS,
+  VERIFICATION,
+} from "../../data/products.js";
 import {
   AI_IMAGE_KIND,
   REAL_IMAGE_KIND,
+  getProductMaterialNames,
 } from "../../data/site-content.js";
 
 const verificationStates = new Set(Object.values(VERIFICATION));
+const displayableVerificationStates = new Set([
+  VERIFICATION.VERIFIED,
+  VERIFICATION.DEMO,
+]);
 const imageKinds = new Set([AI_IMAGE_KIND, REAL_IMAGE_KIND]);
+const allowedCategories = new Set(CATALOGUE_FILTER_OPTIONS.categories);
+const allowedMaterials = new Set(CATALOGUE_FILTER_OPTIONS.materials);
+const allowedSizes = new Set(CATALOGUE_FILTER_OPTIONS.sizes);
 const requiredTextFields = [
   "id",
+  "reference",
   "slug",
   "name",
   "shortDescription",
@@ -68,6 +80,8 @@ function validateConfig(config, errors) {
     "brand",
     "siteTitle",
     "siteDescription",
+    "whatsappBrandName",
+    "collectionWhatsappMessage",
     "generalWhatsappMessage",
     "instagramUrl",
     "socialImageUrl",
@@ -112,8 +126,14 @@ export function validateCatalogue(
   }
 
   const ids = new Set();
+  const references = new Set();
   const slugs = new Set();
   const folders = new Set();
+  const catalogueById = new Map(
+    catalogue
+      .filter((product) => product && typeof product === "object")
+      .map((product) => [product.id, product]),
+  );
   const inventoryRootExists = fs.existsSync(path.join(repositoryRoot, "ropa"));
 
   for (const [index, product] of catalogue.entries()) {
@@ -141,15 +161,29 @@ export function validateCatalogue(
     }
     ids.add(product.id);
 
+    if (references.has(product.reference)) {
+      errors.push(`${label}: referencia duplicada.`);
+    }
+    references.add(product.reference);
+
     if (slugs.has(product.slug)) {
       errors.push(`${label}: slug duplicado.`);
     }
     slugs.add(product.slug);
 
-    if (folders.has(product.folder)) {
-      errors.push(`${label}: carpeta de inventario duplicada.`);
+    if (product.demoSourceProductId) {
+      const sourceProduct = catalogueById.get(product.demoSourceProductId);
+      if (!sourceProduct || sourceProduct === product) {
+        errors.push(`${label}: demoSourceProductId no referencia una prenda base válida.`);
+      } else if (sourceProduct.folder !== product.folder) {
+        errors.push(`${label}: la carpeta demo debe coincidir con su fuente de imágenes.`);
+      }
+    } else {
+      if (folders.has(product.folder)) {
+        errors.push(`${label}: carpeta de inventario duplicada.`);
+      }
+      folders.add(product.folder);
     }
-    folders.add(product.folder);
 
     if (!Number.isInteger(product.availability) || product.availability < 1) {
       errors.push(
@@ -168,12 +202,80 @@ export function validateCatalogue(
     }
 
     const priceStatus = product.fieldVerification?.priceClp;
-    if (priceStatus === VERIFICATION.VERIFIED) {
+    if (displayableVerificationStates.has(priceStatus)) {
       if (!Number.isInteger(product.priceClp) || product.priceClp < 0) {
-        errors.push(`${label}: priceClp verificado debe ser un entero CLP no negativo.`);
+        errors.push(
+          `${label}: priceClp publicado debe ser un entero CLP no negativo.`,
+        );
       }
     } else if (product.priceClp !== null) {
       errors.push(`${label}: priceClp no verificado debe permanecer en null.`);
+    }
+
+    if (!allowedCategories.has(product.category)) {
+      errors.push(`${label}: categoría fuera de la lista centralizada de filtros.`);
+    }
+
+    if (
+      displayableVerificationStates.has(product.fieldVerification?.size) &&
+      !allowedSizes.has(String(product.size))
+    ) {
+      errors.push(`${label}: talla fuera de la lista centralizada de filtros.`);
+    }
+
+    if (
+      displayableVerificationStates.has(product.fieldVerification?.materials)
+    ) {
+      const productMaterials = getProductMaterialNames(product);
+      if (new Set(productMaterials).size !== productMaterials.length) {
+        errors.push(`${label}: materials contiene valores duplicados.`);
+      }
+      if (productMaterials.some((material) => !allowedMaterials.has(material))) {
+        errors.push(`${label}: material fuera de la lista centralizada de filtros.`);
+      }
+    }
+
+    for (const field of ["audience", "size", "manufactureCountry"]) {
+      if (
+        displayableVerificationStates.has(product.fieldVerification?.[field]) &&
+        !isNonEmptyText(product[field])
+      ) {
+        errors.push(`${label}: ${field} publicado no puede estar vacío.`);
+      }
+    }
+
+    if (
+      displayableVerificationStates.has(product.fieldVerification?.materials) &&
+      !(
+        isNonEmptyText(product.materials) ||
+        (Array.isArray(product.materials) && product.materials.length > 0)
+      )
+    ) {
+      errors.push(`${label}: materials publicado no puede estar vacío.`);
+    }
+
+    if (
+      displayableVerificationStates.has(product.fieldVerification?.measurements) &&
+      !(
+        isNonEmptyText(product.measurements) ||
+        (Array.isArray(product.measurements) && product.measurements.length > 0) ||
+        (product.measurements &&
+          typeof product.measurements === "object" &&
+          Object.keys(product.measurements).length > 0)
+      )
+    ) {
+      errors.push(`${label}: measurements publicado no puede estar vacío.`);
+    }
+
+    if (
+      displayableVerificationStates.has(
+        product.fieldVerification?.originalPriceYen,
+      ) &&
+      (!Number.isInteger(product.originalPriceYen) || product.originalPriceYen < 0)
+    ) {
+      errors.push(
+        `${label}: originalPriceYen publicado debe ser un entero no negativo.`,
+      );
     }
 
     if (!Array.isArray(product.images) || product.images.length === 0) {
